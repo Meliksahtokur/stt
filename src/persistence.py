@@ -1,52 +1,79 @@
 # src/persistence.py
 
+"""
+Bu modül, işlenmiş verilerin kalıcı olarak saklanması (JSON dosyasına yazma)
+ve geri yüklenmesi (JSON dosyasından okuma) işlemlerini yönetir.
+Dosya işlemleri sırasında oluşabilecek hatalara karşı sağlamlaştırılmıştır.
+"""
+
 import json
-import os
 from datetime import datetime
+from typing import List, Dict, Any, Optional
 
-def save_animals(animals, filename):
-    """
-    Saves processed animal data to a JSON file.
-    Converts datetime objects to ISO format strings for serialization.
-    """
-    serializable_animals = []
-    for animal in animals:
-        serializable_animal = animal.copy()
-        for key, value in serializable_animal.items():
-            if isinstance(value, datetime):
-                serializable_animal[key] = value.isoformat()
-        serializable_animals.append(serializable_animal)
-        
-    os.makedirs(os.path.dirname(filename), exist_ok=True) # Klasör yoksa oluştur
-    with open(filename, 'w', encoding='utf-8') as f:
-        json.dump(serializable_animals, f, ensure_ascii=False, indent=4)
-    print(f"Veriler '{filename}' dosyasına kaydedildi.")
+from config.settings import LOCAL_DATA_FILE
 
-def load_animals(filename):
+class PersistenceError(Exception):
+    """Dosya okuma/yazma işlemleri sırasında oluşan hatalar için özel istisna sınıfı."""
+    pass
+
+def default_serializer(obj):
+    """JSON serializer for objects not serializable by default json code"""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
+
+def save_animals(animals: List[Dict[str, Any]]):
     """
-    Loads animal data from a JSON file and converts date strings back to datetime objects.
+    Hayvan verilerini bir JSON dosyasına kaydeder.
+
+    Args:
+        animals: Kaydedilecek hayvan verilerinin listesi.
+    
+    Raises:
+        PersistenceError: Dosyaya yazma sırasında bir hata oluşursa.
     """
-    if not os.path.exists(filename) or os.stat(filename).st_size == 0:
-        print(f"Uyarı: '{filename}' dosyası bulunamadı veya boş. Yeni veri çekilecek.")
-        return []
     try:
-        with open(filename, 'r', encoding='utf-8') as f:
-            animals = json.load(f)
-        # Convert ISO format strings back to datetime objects
-        for animal in animals:
-            if animal.get('ilk_tohumlama_tarihi'):
-                try: animal['ilk_tohumlama_tarihi'] = datetime.fromisoformat(animal['ilk_tohumlama_tarihi'])
-                except ValueError: animal['ilk_tohumlama_tarihi'] = None
-            if animal.get('gebeli_onay_tarihi'):
-                try: animal['gebeli_onay_tarihi'] = datetime.fromisoformat(animal['gebeli_onay_tarihi'])
-                except ValueError: animal['gebeli_onay_tarihi'] = None
-            if animal.get('beklenen_dogum_tarihi'):
-                try: animal['beklenen_dogum_tarihi'] = datetime.fromisoformat(animal['beklenen_dogum_tarihi'])
-                except ValueError: animal['beklenen_dogum_tarihi'] = None
-        return animals
+        with open(LOCAL_DATA_FILE, 'w', encoding='utf-8') as f:
+            json.dump(animals, f, ensure_ascii=False, indent=4, default=default_serializer)
+        print(f"Veriler başarıyla {LOCAL_DATA_FILE} dosyasına kaydedildi.")
+    except (IOError, TypeError) as e:
+        # IOError: Yazma izni yoksa, disk doluysa vb.
+        # TypeError: Veri içinde JSON'a çevrilemeyen bir tip varsa.
+        raise PersistenceError(f"Veriler kaydedilirken bir hata oluştu: {e}") from e
+
+def load_animals() -> Optional[List[Dict[str, Any]]]:
+    """
+    Hayvan verilerini bir JSON dosyasından yükler.
+
+    Returns:
+        Yüklenen hayvan verilerinin listesi veya dosya yoksa/boşsa None.
+    
+    Raises:
+        PersistenceError: Dosya okunamıyorsa veya bozuk JSON içeriyorsa.
+    """
+    try:
+        with open(LOCAL_DATA_FILE, 'r', encoding='utf-8') as f:
+            content = f.read()
+            if not content:
+                print("Veri dosyası boş, yeni bir dosya oluşturulacak.")
+                return None
+            data = json.loads(content)
+            
+            # Tarih alanlarını tekrar datetime objesine çevir
+            for animal in data:
+                for key, value in animal.items():
+                    if key.endswith('_dt') or key == 'beklenen_dogum_tarihi':
+                        if isinstance(value, str):
+                            try:
+                                animal[key] = datetime.fromisoformat(value)
+                            except (ValueError, TypeError):
+                                animal[key] = None # Çevrilemezse None yap
+            return data
+
+    except FileNotFoundError:
+        print(f"{LOCAL_DATA_FILE} bulunamadı. İlk çalıştırmada oluşturulacak.")
+        return None
     except json.JSONDecodeError as e:
-        print(f"Hata: '{filename}' dosyası bozuk veya geçersiz JSON formatında. Hata: {e}")
-        return []
-    except Exception as e:
-        print(f"Lokal veri yüklenirken beklenmeyen bir hata oluştu: {e}")
-        return []
+        raise PersistenceError(f"Veri dosyası bozuk veya geçersiz JSON formatında: {e}") from e
+    except IOError as e:
+        raise PersistenceError(f"Veri dosyası okunurken bir G/Ç hatası oluştu: {e}") from e
