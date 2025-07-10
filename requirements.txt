@@ -1,0 +1,6 @@
+requests
+beautifulsoup4
+tabulate
+Kivy
+plyer
+buildozer
