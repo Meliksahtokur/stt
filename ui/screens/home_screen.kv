@@ -1,0 +1,30 @@
+<WindowManager>:
+    HomeScreen:
+        name: 'home'
+
+<HomeScreen@MDScreen>:
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDTopAppBar:
+            title: "Sürü Yönetimi"
+        ScrollView:
+            RecycleView:
+                id: animal_list
+                view_class: 'AnimalItem'
+                RecycleBoxLayout:
+                    default_size: None, dp(56)
+                    default_size_hint: 1, None
+                    size_hint_y: None
+                    height: self.minimum_height
+                    orientation: 'vertical'
+                    spacing: dp(10)
+                    padding: dp(10)
+        MDFloatingActionButton:
+            icon: "plus"
+            pos_hint: {"center_x": 0.5, "center_y": 0.1}
+
+<AnimalItem@OneLineAvatarIconListItem>:
+    text: root.text
+    ImageLeftWidget:
+        source: 'animal_icon.png' # Replace with actual icon path
+
