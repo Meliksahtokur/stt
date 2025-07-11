@@ -24,7 +24,8 @@
             pos_hint: {"center_x": 0.5, "center_y": 0.1}
 
 <AnimalItem@OneLineAvatarIconListItem>:
-    text: root.text
+    text: root.isletme_kupesi + " - " + root.sinif + " - " + root.devlet_kupesi # Display multiple fields
+    # Add more fields as needed to the text property
     ImageLeftWidget:
-        source: 'animal_icon.png' # Replace with actual icon path
+        source: 'animal_icon.png'
 
