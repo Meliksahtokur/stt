@@ -19,3 +19,4 @@ data/*.json
 # Logs
 *.log
 .aider*
+config/secrets.py
