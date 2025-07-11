@@ -1,0 +1,11 @@
+<AnimalDetailsScreen>:
+    name: 'animal_details'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDTopAppBar:
+            title: "Hayvan Detayları"
+            left_action_items: [["arrow-left", lambda x: app.root.current = 'home']]
+        ScrollView:
+            MDList:
+                id: animal_details_list
+
