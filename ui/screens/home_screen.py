@@ -6,7 +6,8 @@ from kivy.uix.label import Label
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.image import Image
 from kivy.uix.behaviors import FocusBehavior
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, BooleanProperty # Added import
+from kivy.uix.recycleview.layout import LayoutSelectionBehavior # Added import
 from src.main import get_all_animal_data
 
 
