@@ -1,0 +1,11 @@
+<StatisticsScreen>:
+    name: 'statistics'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDTopAppBar:
+            title: "İstatistikler"
+            left_action_items: [["arrow-left", lambda x: app.root.current = 'home']]
+        ScrollView:
+            MDList:
+                id: statistics_list
+
