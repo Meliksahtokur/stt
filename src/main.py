@@ -1,67 +1,63 @@
 # src/main.py
 
-"""
-Uygulamanın ana giriş noktası. Tüm operasyonu yönetir, modülleri
-orkestra şefi gibi çalıştırır ve kullanıcıya sonuçları sunar.
-Hata yönetimi, tüm operasyonun çökmesini engellemek için merkezileştirilmiştir.
-"""
+import sys
+import os
 
-from config.settings import DATA_SOURCE_URL
-from src.scraper import fetch_and_parse_table, ScraperError
-from src.data_processor import process_and_enrich_animal_data, DataProcessingError
-from src.persistence import save_animals, load_animals, PersistenceError
-from src.display import display_animals, display_notifications
+# Proje ana dizinini Python'un arama yoluna ekle
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
-def main():
+from src.auth_manager import AuthManager
+from src.sync_manager import SyncManager
+from src.permissions_manager import PermissionsManager
+from src.data_processor import get_display_name
+
+def main_app():
     """
-    Ana uygulama döngüsü.
+    Uygulamanın ana mantık akışı.
+    Kivy arayüzü bu fonksiyonları çağıracak.
     """
-    print("Hayvan Takip ve Gebelik Bildirim Sistemi Başlatılıyor...")
+    print("--- Sürü Yönetim Platformu ---")
+    auth = AuthManager()
+    
+    # 1. Kimlik Doğrulama
+    user = auth.get_current_user()
+    if not user:
+        print("Giriş yapılmamış. Lütfen önce giriş yapın.")
+        # Gerçek uygulamada bu bir giriş ekranı açacak.
+        # Test için manuel giriş yapıyoruz.
+        try:
+            email = "test@example.com" # Burayı kendi test kullanıcınızla değiştirin
+            password = "password"      # Burayı kendi şifrenizle değiştirin
+            user = auth.sign_in(email, password)
+            print(f"Giriş başarılı: {user.email}")
+        except Exception as e:
+            print(f"Test girişi başarısız: {e}")
+            return
 
-    try:
-        # 1. Veriyi Çek
-        print(f"Veriler şu adresten çekiliyor: {DATA_SOURCE_URL}")
-        raw_data = fetch_and_parse_table(DATA_SOURCE_URL)
-        if not raw_data:
-            print("Web sitesinden yeni veri çekilemedi veya sitede kayıt yok.")
-            # Eski veriyi yüklemeyi deneyebiliriz
-            animals = load_animals()
-            if not animals:
-                print("Lokalde de kayıtlı veri bulunamadı. Uygulama sonlandırılıyor.")
-                return
-        else:
-            # 2. Veriyi İşle ve Zenginleştir
-            print("Veriler işleniyor ve zenginleştiriliyor...")
-            animals = process_and_enrich_animal_data(raw_data)
+    # 2. Yetki ve Senkronizasyon Yöneticilerini Başlat
+    permissions = PermissionsManager(auth.supabase, user.id)
+    sync = SyncManager(user.id, auth.supabase)
 
-            # 3. İşlenmiş Veriyi Kaydet
-            print("İşlenmiş veriler kaydediliyor...")
-            save_animals(animals)
-
-        # 4. Sonuçları Göster
-        if animals:
-            print("\n--- Hayvan Durum Raporu ---")
-            display_animals(animals)
-            print("\n--- Önemli Bildirimler ---")
-            display_notifications(animals)
-        else:
-            print("Gösterilecek işlenmiş veri bulunamadı.")
-
-    except ScraperError as e:
-        print(f"\n[HATA] Veri çekme aşamasında kritik bir sorun oluştu: {e}")
-        print("Lütfen internet bağlantınızı veya config/settings.py dosyasındaki URL'yi kontrol edin.")
-    except DataProcessingError as e:
-        print(f"\n[HATA] Veri işleme aşamasında kritik bir sorun oluştu: {e}")
-        print("Lütfen web sitesindeki verilerin formatını kontrol edin.")
-    except PersistenceError as e:
-        print(f"\n[HATA] Veri kaydetme/okuma sırasında kritik bir sorun oluştu: {e}")
-        print("Lütfen dosya izinlerini veya disk durumunu kontrol edin.")
-    except Exception as e:
-        # Beklenmedik diğer tüm hatalar için son kale
-        print(f"\n[BEKLENMEDİK HATA] Program çalışırken bir sorunla karşılaştı: {e}")
-        print("Lütfen geliştirici ile iletişime geçin.")
-    finally:
-        print("\nUygulama çalışmasını tamamladı.")
+    # 3. Veri Çekme ve Gösterme
+    if permissions.can_read_animals():
+        print("\nHayvan verileri çekiliyor...")
+        try:
+            all_animals = sync.get_all_animal_data()
+            print(f"Toplam {len(all_animals)} hayvan kaydı bulundu.")
+            
+            if all_animals:
+                print("\n--- Sürü Listesi ---")
+                for animal in all_animals:
+                    display_name = get_display_name(animal)
+                    tohumlama_sayisi = len(animal.get('tohumlamalar', []))
+                    print(f"- {display_name} (Tohumlamalar: {tohumlama_sayisi})")
+            
+        except Exception as e:
+            print(f"Veri çekilirken bir hata oluştu: {e}")
+    else:
+        print("Hayvan verilerini görme yetkiniz yok.")
 
 if __name__ == "__main__":
-    main()
+    main_app()
