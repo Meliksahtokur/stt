@@ -22,10 +22,11 @@
         MDFloatingActionButton:
             icon: "plus"
             pos_hint: {"center_x": 0.5, "center_y": 0.1}
+            on_press: app.root.current = 'add_animal' # Navigate to add_animal screen
 
 <AnimalItem@OneLineAvatarIconListItem>:
-    text: root.isletme_kupesi + " - " + root.sinif + " - " + root.devlet_kupesi # Display multiple fields
-    # Add more fields as needed to the text property
+    text: root.isletme_kupesi + " - " + root.sinif + " - " + root.devlet_kupesi
+    on_release: app.root.current = 'animal_details'; app.root.get_screen('animal_details').set_animal_data(root.data)
     ImageLeftWidget:
         source: 'animal_icon.png'
 

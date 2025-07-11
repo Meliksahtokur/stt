@@ -1,0 +1,24 @@
+<AddAnimalScreen>:
+    name: 'add_animal'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDTopAppBar:
+            title: "Yeni Hayvan Ekle"
+            left_action_items: [["arrow-left", lambda x: app.root.current = 'home']]
+        MDTextField:
+            id: isletme_kupesi_field
+            hint_text: "İşletme Küpesi"
+            required: True
+        MDTextField:
+            id: devlet_kupesi_field
+            hint_text: "Devlet Küpesi"
+        MDTextField:
+            id: tasma_no_field
+            hint_text: "Taşma No"
+        MDTextField:
+            id: irk_field
+            hint_text: "Irk"
+        MDRaisedButton:
+            text: "Kaydet"
+            on_press: root.save_animal()
+
