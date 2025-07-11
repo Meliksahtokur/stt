@@ -3,9 +3,11 @@ from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 from kivymd.uix.list import OneLineListItem, TwoLineListItem
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton, MDRaisedButton
-from src.persistence import save_animals, load_animals
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label # Import Label
+from kivymd.uix.textfield import MDTextField # Import MDTextField
+from src.persistence import save_animals, load_animals
 
 
 class AnimalDetailsScreen(MDScreen):
