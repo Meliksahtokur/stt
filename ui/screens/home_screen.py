@@ -16,11 +16,35 @@ from kivy.clock import Clock
 
 
 class AnimalItem(RecycleDataViewBehavior, BoxLayout):
-    # ... (rest of AnimalItem class remains the same) ...
+    index = None
+    selected = BooleanProperty(False)
+    selectable = BooleanProperty(True)
+    isletme_kupesi = StringProperty("")
+    sinif = StringProperty("")
+    devlet_kupesi = StringProperty("")
+    # Add other properties as needed
+
+    def refresh_view_attrs(self, rv, index, data):
+        self.index = index
+        self.isletme_kupesi = data.get('isletme_kupesi', 'N/A')
+        self.sinif = data.get('sinif', 'N/A')
+        self.devlet_kupesi = data.get('devlet_kupesi', 'N/A')
+        # Update other properties
+        return super().refresh_view_attrs(rv, index, data)
+
+    def on_touch_down(self, touch):
+        if super().on_touch_down(touch):
+            return True
+        if self.collide_point(*touch.pos) and self.selectable:
+            return self.parent.select_with_touch(self.index, touch)
+
+    def apply_selection(self, rv, index, is_selected):
+        self.selected = is_selected
 
 
 class SelectableRecycleBoxLayout(FocusBehavior, LayoutSelectionBehavior,
                                  RecycleBoxLayout):
+    ''' Add selection support to the RecycleBoxLayout '''
     pass
 
 
@@ -48,5 +72,14 @@ class HomeScreen(MDScreen):
             } for animal in animals]
 
     def show_error_dialog(self, message):
-        # ... (rest of show_error_dialog remains the same) ...
+        if not self.dialog:
+            self.dialog = MDDialog(
+                title="Hata",
+                text=message,
+                buttons=[
+                    MDFlatButton(text="Tamam", on_release=lambda x: self.dialog.dismiss())
+                ],
+            )
+        self.dialog.text = message
+        self.dialog.open()
 
