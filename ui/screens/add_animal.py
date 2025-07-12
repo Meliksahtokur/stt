@@ -39,26 +39,25 @@ class AddAnimalScreen(MDScreen):
             self.reset_fields()
         except Exception as e:
             self.show_error_dialog(f"Hayvan kaydedilirken hata oluştu: {e}")
+            print(f"An unexpected error occurred: {e}") #For debugging purposes
+
+    def show_dialog(self, title, message, button_text="Tamam"):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                title=title,
+                text=message,
+                buttons=[MDFlatButton(text=button_text, on_release=lambda x: self.dialog.dismiss())],
+            )
+        else:
+            self.dialog.title = title
+            self.dialog.text = message
+        self.dialog.open()
 
     def show_error_dialog(self, message):
-        if not self.dialog:
-            self.dialog = MDDialog(
-                title="Hata",
-                text=message,
-                buttons=[MDFlatButton(text="Tamam", on_release=lambda x: self.dialog.dismiss())],
-            )
-        self.dialog.text = message
-        self.dialog.open()
+        self.show_dialog("Hata", message)
 
     def show_success_dialog(self, message):
-        if not self.dialog:
-            self.dialog = MDDialog(
-                title="Başarılı",
-                text=message,
-                buttons=[MDFlatButton(text="Tamam", on_release=lambda x: self.dialog.dismiss())],
-            )
-        self.dialog.text = message
-        self.dialog.open()
+        self.show_dialog("Başarılı", message)
 
     def reset_fields(self):
         self.isletme_kupesi_field.text = ""
