@@ -20,3 +20,5 @@ data/*.json
 *.log
 .aider*
 config/secrets.py
+.env
+config/secrets.py
