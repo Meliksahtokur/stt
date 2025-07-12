@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+load_dotenv() # .env dosyasındaki değişkenleri yükler
 # config/settings.py
 
 DATA_SOURCE_URL = 'http://vethek.org/t_2_7867_NDcyNQ.htm'
