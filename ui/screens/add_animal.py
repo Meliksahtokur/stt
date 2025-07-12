@@ -4,6 +4,8 @@ from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
 from src.persistence import save_animals, load_animals
 import uuid
+from src.sync_manager import SyncManager
+import asyncio
 
 class AddAnimalScreen(MDScreen):
     isletme_kupesi_field = ObjectProperty(None)
@@ -11,6 +13,11 @@ class AddAnimalScreen(MDScreen):
     tasma_no_field = ObjectProperty(None)
     irk_field = ObjectProperty(None)
     dialog = None
+    sync_manager = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.sync_manager = SyncManager()
 
     def save_animal(self):
         isletme_kupesi = self.isletme_kupesi_field.text
@@ -31,15 +38,15 @@ class AddAnimalScreen(MDScreen):
             'tohumlamalar': []
         }
 
+        asyncio.run(self._save_animal(new_animal))
+
+    async def _save_animal(self, new_animal):
         try:
-            animals = load_animals() or []
-            animals.append(new_animal)
-            save_animals(animals)
+            await self.sync_manager.create_animal(new_animal)
             self.show_success_dialog("Hayvan başarıyla kaydedildi.")
             self.reset_fields()
         except Exception as e:
             self.show_error_dialog(f"Hayvan kaydedilirken hata oluştu: {e}")
-            print(f"An unexpected error occurred: {e}") #For debugging purposes
 
     def show_dialog(self, title, message, button_text="Tamam"):
         if not self.dialog:

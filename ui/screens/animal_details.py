@@ -8,13 +8,19 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label # Import Label
 from kivymd.uix.textfield import MDTextField # Import MDTextField
 from src.persistence import save_animals, load_animals
-
+from src.sync_manager import SyncManager
+import asyncio
 
 class AnimalDetailsScreen(MDScreen):
     animal_data = ObjectProperty(None)
     animal_uuid = StringProperty("")
     edit_mode = BooleanProperty(False)
-    dialog = None
+    dialog = ObjectProperty(None)
+    sync_manager = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.sync_manager = SyncManager()
 
     def set_animal_data(self, animal_data):
         self.animal_data = animal_data
@@ -48,7 +54,7 @@ class AnimalDetailsScreen(MDScreen):
         self.ids.edit_button.text = "Kaydet" if self.edit_mode else "Düzenle"
         self.populate_list()
 
-    def save_changes(self):
+    async def save_changes(self):
         if self.edit_mode:
             updated_animal = self.animal_data.copy()
             for i in range(0, self.ids.animal_details_list.children.__len__()):
@@ -57,10 +63,7 @@ class AnimalDetailsScreen(MDScreen):
                     value = self.ids.animal_details_list.children[i].children[1].text
                     updated_animal[key] = value
             try:
-                animals = load_animals()
-                animals = [animal for animal in animals if animal['uuid'] != self.animal_uuid]
-                animals.append(updated_animal)
-                save_animals(animals)
+                await self.sync_manager.update_animal(self.animal_uuid, updated_animal)
                 self.show_success_dialog("Değişiklikler kaydedildi.")
                 self.edit_mode = False
                 self.ids.edit_button.text = "Düzenle"
@@ -91,6 +94,6 @@ class AnimalDetailsScreen(MDScreen):
         self.dialog.open()
 
     def on_kv_post(self, base_widget):
-        self.ids.edit_button = MDRaisedButton(text="Düzenle", on_press=self.save_changes, size_hint_y=None, height=40)
+        self.ids.edit_button = MDRaisedButton(text="Düzenle", on_press=lambda x: asyncio.run(self.save_changes()), size_hint_y=None, height=40)
         self.ids.animal_details_list.add_widget(self.ids.edit_button)
 
