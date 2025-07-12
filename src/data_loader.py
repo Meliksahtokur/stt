@@ -36,3 +36,4 @@ def load_data_from_file(file_path: str) -> List[Dict[str, Any]]:
     except Exception as e:
         logging.exception(f"An error occurred while loading data from {file_path}: {e}")
         raise
+
