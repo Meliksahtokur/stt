@@ -20,7 +20,7 @@ def calculate_statistics(processed_animals: List[Dict[str, Any]]) -> Dict[str, A
     average_inseminations = total_inseminations / total_animals if total_animals else 0
 
     # Calculate the average age of animals (assuming 'dogum_tarihi' exists and is datetime)
-    valid_ages_days = [(date.today() - animal['dogum_tarihi']).days 
+    valid_ages_days = [(date.today() - animal['dogum_tarihi'].date()).days # Convert datetime to date
                        for animal in processed_animals 
                        if animal.get('dogum_tarihi') and isinstance(animal['dogum_tarihi'], datetime)]
     

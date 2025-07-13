@@ -16,14 +16,19 @@ class TestStatistics(unittest.TestCase):
     def setUp(self):
         self.mock_animals = [
             {'uuid': '1', 'isletme_kupesi': 'A001', 'devlet_kupesi': 'D001', 'tasma_no': 'T001', 'irk': 'Holstein', 'sinif': 'İnek',
-             'dogum_tarihi': datetime(2020, 1, 1), 'tohumlamalar': [{'tohumlama_tarihi': datetime(2022, 5, 1)}]},
+             'dogum_tarihi': datetime(2020, 1, 1), 'tohumlamalar': [{'tohumlama_tarihi': '2022-05-01T00:00:00'}]}, # Changed to ISO string
             {'uuid': '2', 'isletme_kupesi': 'A002', 'devlet_kupesi': 'D002', 'tasma_no': 'T002', 'irk': 'Jersey', 'sinif': 'Düve',
              'dogum_tarihi': datetime(2023, 3, 15), 'tohumlamalar': []},
             {'uuid': '3', 'isletme_kupesi': 'A003', 'devlet_kupesi': 'D003', 'tasma_no': 'T003', 'irk': 'Holstein', 'sinif': 'İnek',
-             'dogum_tarihi': datetime(2021, 7, 20), 'tohumlamalar': [{'tohumlama_tarihi': datetime(2023, 1, 1)}, {'tohumlama_tarihi': datetime(2022, 1, 1)}]},
+             'dogum_tarihi': datetime(2021, 7, 20), 'tohumlamalar': [{'tohumlama_tarihi': '2023-01-01T00:00:00'}, {'tohumlama_tarihi': '2022-01-01T00:00:00'}]}, # Changed to ISO string
             {'uuid': '4', 'isletme_kupesi': 'A004', 'devlet_kupesi': 'D004', 'tasma_no': 'T004', 'irk': 'Angus', 'sinif': 'Düve',
-             'dogum_tarihi': datetime(2024, 2, 10), 'tohumlamalar': [{'tohumlama_tarihi': datetime(2024, 5, 15)}]},
+             'dogum_tarihi': datetime(2024, 2, 10), 'tohumlamalar': [{'tohumlama_tarihi': '2024-05-15T00:00:00'}]}, # Changed to ISO string
         ]
+        # Process the mock animals through data_processor to simulate real app flow
+        # This is crucial for 'son_tohumlama' and 'gebelik_durumu_metin' to be correctly set as datetime objects
+        from src.data_processor import process_animal_records
+        self.processed_mock_animals = process_animal_records(self.mock_animals)
+
 
     def test_calculate_statistics_empty_list(self):
         self.assertEqual(calculate_statistics([]), {})
@@ -32,7 +37,7 @@ class TestStatistics(unittest.TestCase):
     def test_calculate_statistics(self, mock_date):
         mock_date.today.return_value = date(2024, 7, 13) # Fix current date for consistent age calculation
 
-        stats = calculate_statistics(self.mock_animals)
+        stats = calculate_statistics(self.processed_mock_animals) # Use processed animals
         self.assertAlmostEqual(stats["toplam_hayvan_sayisi"], 4)
         self.assertAlmostEqual(stats["inek_sayisi"], 2)
         self.assertAlmostEqual(stats["duve_sayisi"], 2)
@@ -51,7 +56,7 @@ class TestStatistics(unittest.TestCase):
 
 
     def test_calculate_breed_distribution(self):
-        breed_dist = calculate_breed_distribution(self.mock_animals)
+        breed_dist = calculate_breed_distribution(self.processed_mock_animals) # Use processed animals
         self.assertEqual(breed_dist, {'Holstein': 2, 'Jersey': 1, 'Angus': 1})
 
     def test_generate_pie_chart_base64_valid_data(self):
@@ -90,11 +95,15 @@ class TestStatistics(unittest.TestCase):
         self.assertIsNone(chart_base64) # Should return None as per implementation
 
     def test_get_animal_specific_stats_found(self):
-        stats = get_animal_specific_stats('1', self.mock_animals)
+        stats = get_animal_specific_stats('1', self.processed_mock_animals) # Use processed animals
         self.assertEqual(stats['toplam_tohumlama_sayisi'], 1)
         self.assertEqual(stats['sinif_tahmini'], 'İnek')
-        self.assertIsInstance(stats['son_tohumlama'], datetime)
-        self.assertEqual(stats['dogum_tarihi'], '2020-01-01')
+        self.assertIsInstance(stats['son_tohumlama'], datetime) # Now it should be datetime object
+        self.assertEqual(stats['dogum_tarihi'], '2020-01-01') # This is expected to be string from stats function
+
+    def test_get_animal_specific_stats_not_found(self):
+        stats = get_animal_specific_stats('999', self.processed_mock_animals) # Use processed animals
+        self.assertEqual(stats, {"hata": "Hayvan bulunamadı."})
 
     def test_get_animal_specific_stats_not_found(self):
         stats = get_animal_specific_stats('999', self.mock_animals)

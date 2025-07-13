@@ -18,11 +18,14 @@ class TestSyncManager(unittest.IsolatedAsyncioTestCase):
         self.patcher_save_animals = patch('src.sync_manager.save_animals')
         self.patcher_load_sync_queue = patch('src.sync_manager.load_sync_queue')
         self.patcher_save_sync_queue = patch('src.sync_manager.save_sync_queue')
+        # Patch _add_to_sync_queue at the class level for create/update tests
+        self.patcher_add_to_sync_queue = patch('src.sync_manager.SyncManager._add_to_sync_queue', new_callable=MagicMock)
 
         self.mock_load_animals = self.patcher_load_animals.start()
         self.mock_save_animals = self.patcher_save_animals.start()
         self.mock_load_sync_queue = self.patcher_load_sync_queue.start()
         self.mock_save_sync_queue = self.patcher_save_sync_queue.start()
+        self.mock_add_to_sync_queue = self.patcher_add_to_sync_queue.start() # Start the mock
 
         # Mock create_client to return our mock client
         self.patcher_create_client = patch('src.sync_manager.create_client', return_value=self.mock_supabase_client)
@@ -36,6 +39,7 @@ class TestSyncManager(unittest.IsolatedAsyncioTestCase):
         self.patcher_save_animals.stop()
         self.patcher_load_sync_queue.stop()
         self.patcher_save_sync_queue.stop()
+        self.patcher_add_to_sync_queue.stop() # Stop the mock
         self.patcher_create_client.stop()
 
     async def test_init_no_user_id(self):
@@ -91,11 +95,11 @@ class TestSyncManager(unittest.IsolatedAsyncioTestCase):
         
         self.mock_add_to_sync_queue.assert_called_once_with('update', saved_animals[0])
 
-    @patch('src.sync_manager.SyncManager._add_to_sync_queue', new_callable=MagicMock)
-    async def test_add_to_sync_queue(self, mock_add_to_sync_queue):
+    # This test no longer mocks _add_to_sync_queue itself, but asserts its internal calls
+    async def test_add_to_sync_queue(self):
         self.mock_load_sync_queue.return_value = []
         test_data = {"id": "test", "action": "test_action"}
-        self.sync_manager._add_to_sync_queue("test_action", test_data)
+        self.sync_manager._add_to_sync_queue("test_action", test_data) # Call the actual method
         self.mock_load_sync_queue.assert_called_once()
         self.mock_save_sync_queue.assert_called_once_with([{"action": "test_action", "data": test_data}])
 

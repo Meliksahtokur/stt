@@ -25,14 +25,16 @@ class TestDataLoader(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             load_data_from_file('nonexistent_file.csv')
 
+    @patch('src.data_loader.os.path.exists', return_value=True) # Mock file existence
     @patch('src.data_loader.pd.read_csv', side_effect=pd.errors.EmptyDataError("Empty CSV"))
-    def test_load_data_from_file_empty_csv(self, mock_read_csv):
+    def test_load_data_from_file_empty_csv(self, mock_read_csv, mock_exists):
         with self.assertRaises(ValueError) as context:
             load_data_from_file('empty_file.csv')
         self.assertEqual(str(context.exception), "The uploaded CSV file is empty.")
 
+    @patch('src.data_loader.os.path.exists', return_value=True) # Mock file existence
     @patch('src.data_loader.pd.read_csv', side_effect=pd.errors.ParserError("Parse error"))
-    def test_load_data_from_file_parse_error(self, mock_read_csv):
+    def test_load_data_from_file_parse_error(self, mock_read_csv, mock_exists):
         with self.assertRaises(ValueError) as context:
             load_data_from_file('bad_file.csv')
         self.assertEqual(str(context.exception), "Error parsing the uploaded CSV file. Please check its format.")
