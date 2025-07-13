@@ -16,13 +16,16 @@ class TestStatistics(unittest.TestCase):
     def setUp(self):
         self.mock_animals = [
             {'uuid': '1', 'isletme_kupesi': 'A001', 'devlet_kupesi': 'D001', 'tasma_no': 'T001', 'irk': 'Holstein', 'sinif': 'İnek',
-             'dogum_tarihi': datetime(2020, 1, 1), 'tohumlamalar': [{'tohumlama_tarihi': '2022-05-01T00:00:00'}]}, # Changed to ISO string
+             'dogum_tarihi': datetime(2020, 1, 1), 'tohumlamalar': [ # Modified for Animal 1 to be İnek
+                 {'tohumlama_tarihi': '2021-01-01T00:00:00'},
+                 {'tohumlama_tarihi': '2022-01-01T00:00:00'}
+             ]},
             {'uuid': '2', 'isletme_kupesi': 'A002', 'devlet_kupesi': 'D002', 'tasma_no': 'T002', 'irk': 'Jersey', 'sinif': 'Düve',
              'dogum_tarihi': datetime(2023, 3, 15), 'tohumlamalar': []},
             {'uuid': '3', 'isletme_kupesi': 'A003', 'devlet_kupesi': 'D003', 'tasma_no': 'T003', 'irk': 'Holstein', 'sinif': 'İnek',
-             'dogum_tarihi': datetime(2021, 7, 20), 'tohumlamalar': [{'tohumlama_tarihi': '2023-01-01T00:00:00'}, {'tohumlama_tarihi': '2022-01-01T00:00:00'}]}, # Changed to ISO string
+             'dogum_tarihi': datetime(2021, 7, 20), 'tohumlamalar': [{'tohumlama_tarihi': '2023-01-01T00:00:00'}, {'tohumlama_tarihi': '2022-01-01T00:00:00'}]},
             {'uuid': '4', 'isletme_kupesi': 'A004', 'devlet_kupesi': 'D004', 'tasma_no': 'T004', 'irk': 'Angus', 'sinif': 'Düve',
-             'dogum_tarihi': datetime(2024, 2, 10), 'tohumlamalar': [{'tohumlama_tarihi': '2024-05-15T00:00:00'}]}, # Changed to ISO string
+             'dogum_tarihi': datetime(2024, 2, 10), 'tohumlamalar': [{'tohumlama_tarihi': '2024-05-15T00:00:00'}]},
         ]
         # Process the mock animals through data_processor to simulate real app flow
         # This is crucial for 'son_tohumlama' and 'gebelik_durumu_metin' to be correctly set as datetime objects
@@ -105,9 +108,7 @@ class TestStatistics(unittest.TestCase):
         stats = get_animal_specific_stats('999', self.processed_mock_animals) # Use processed animals
         self.assertEqual(stats, {"hata": "Hayvan bulunamadı."})
 
-    def test_get_animal_specific_stats_not_found(self):
-        stats = get_animal_specific_stats('999', self.mock_animals)
-        self.assertEqual(stats, {"hata": "Hayvan bulunamadı."})
+    # Removed duplicated test_get_animal_specific_stats_not_found
 
 if __name__ == '__main__':
     unittest.main()

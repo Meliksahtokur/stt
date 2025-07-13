@@ -22,3 +22,4 @@ data/*.json
 config/secrets.py
 .env
 config/secrets.py
+animal_tracker_project.zip

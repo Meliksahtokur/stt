@@ -18,14 +18,14 @@ class TestSyncManager(unittest.IsolatedAsyncioTestCase):
         self.patcher_save_animals = patch('src.sync_manager.save_animals')
         self.patcher_load_sync_queue = patch('src.sync_manager.load_sync_queue')
         self.patcher_save_sync_queue = patch('src.sync_manager.save_sync_queue')
-        # Patch _add_to_sync_queue at the class level for create/update tests
-        self.patcher_add_to_sync_queue = patch('src.sync_manager.SyncManager._add_to_sync_queue', new_callable=MagicMock)
+        # Removed global patch for _add_to_sync_queue.
+        # It will be patched per test where needed.
 
         self.mock_load_animals = self.patcher_load_animals.start()
         self.mock_save_animals = self.patcher_save_animals.start()
         self.mock_load_sync_queue = self.patcher_load_sync_queue.start()
         self.mock_save_sync_queue = self.patcher_save_sync_queue.start()
-        self.mock_add_to_sync_queue = self.patcher_add_to_sync_queue.start() # Start the mock
+        # self.mock_add_to_sync_queue = self.patcher_add_to_sync_queue.start() # Removed this line
 
         # Mock create_client to return our mock client
         self.patcher_create_client = patch('src.sync_manager.create_client', return_value=self.mock_supabase_client)
@@ -39,8 +39,11 @@ class TestSyncManager(unittest.IsolatedAsyncioTestCase):
         self.patcher_save_animals.stop()
         self.patcher_load_sync_queue.stop()
         self.patcher_save_sync_queue.stop()
-        self.patcher_add_to_sync_queue.stop() # Stop the mock
         self.patcher_create_client.stop()
+        # Ensure that patcher_add_to_sync_queue is stopped if it was ever started.
+        # This will be handled by individual test methods now.
+        if hasattr(self, 'patcher_add_to_sync_queue') and self.patcher_add_to_sync_queue.is_started:
+             self.patcher_add_to_sync_queue.stop()
 
     async def test_init_no_user_id(self):
         with self.assertRaises(SyncManagerError):
@@ -77,9 +80,26 @@ class TestSyncManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(saved_animals[0]['sync_status'], 'pending_create')
         self.assertIsNotNone(saved_animals[0].get('last_modified'))
 
-        self.mock_add_to_sync_queue.assert_called_once_with('create', saved_animals[0])
+    @patch.object(SyncManager, '_add_to_sync_queue', new_callable=MagicMock)
+    async def test_create_animal_offline_first(self, mock_add_to_sync_queue): # Add mock to parameters
+        self.mock_load_animals.return_value = []
+        mock_new_animal = {"isletme_kupesi": "A001"}
+        
+        await self.sync_manager.create_animal(mock_new_animal.copy()) # Pass a copy to avoid modification issues during test
 
-    async def test_update_animal_offline_first(self):
+        self.mock_save_animals.assert_called_once()
+        saved_animals = self.mock_save_animals.call_args[0][0]
+        self.assertEqual(len(saved_animals), 1)
+        self.assertEqual(saved_animals[0]['isletme_kupesi'], 'A001')
+        self.assertIsNotNone(saved_animals[0].get('uuid'))
+        self.assertEqual(saved_animals[0]['user_id'], self.user_id)
+        self.assertEqual(saved_animals[0]['sync_status'], 'pending_create')
+        self.assertIsNotNone(saved_animals[0].get('last_modified'))
+
+        mock_add_to_sync_queue.assert_called_once_with('create', saved_animals[0]) # Use the local mock
+
+    @patch.object(SyncManager, '_add_to_sync_queue', new_callable=MagicMock)
+    async def test_update_animal_offline_first(self, mock_add_to_sync_queue): # Add mock to parameters
         existing_animal = {"uuid": "123", "isletme_kupesi": "Old", "user_id": self.user_id}
         self.mock_load_animals.return_value = [existing_animal]
         updated_data = {"uuid": "123", "isletme_kupesi": "New", "user_id": self.user_id}
@@ -93,9 +113,9 @@ class TestSyncManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(saved_animals[0]['sync_status'], 'pending_update')
         self.assertIsNotNone(saved_animals[0].get('last_modified'))
         
-        self.mock_add_to_sync_queue.assert_called_once_with('update', saved_animals[0])
+        mock_add_to_sync_queue.assert_called_once_with('update', saved_animals[0]) # Use the local mock
 
-    # This test no longer mocks _add_to_sync_queue itself, but asserts its internal calls
+    # This test no longer needs specific patching for _add_to_sync_queue as global patch is removed
     async def test_add_to_sync_queue(self):
         self.mock_load_sync_queue.return_value = []
         test_data = {"id": "test", "action": "test_action"}
