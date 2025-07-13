@@ -5,6 +5,7 @@ load_dotenv() # .env dosyasındaki değişkenleri yükler
 
 DATA_SOURCE_URL = 'http://vethek.org/t_2_7867_NDcyNQ.htm'
 LOCAL_DATA_FILE = 'data/animal_records.json'
+SYNC_QUEUE_FILE = 'data/sync_queue.json' # New: File to store pending sync actions
 GESTATATION_PERIOD_DAYS = 285
 
 # Sütun başlıkları ve indeksleri (scrape edilen tablonun yapısına göre ayarlandı)

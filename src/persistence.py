@@ -61,13 +61,25 @@ def load_animals() -> Optional[List[Dict[str, Any]]]:
             
             # Tarih alanlarını tekrar datetime objesine çevir
             for animal in data:
+                # Assuming 'tohumlamalar' might contain date strings
+                if 'tohumlamalar' in animal and isinstance(animal['tohumlamalar'], list):
+                    for insemination in animal['tohumlamalar']:
+                        if 'tohumlama_tarihi' in insemination and isinstance(insemination['tohumlama_tarihi'], str):
+                            try:
+                                # Ensure we don't convert to datetime if it's already a datetime object (unlikely from JSON)
+                                if not isinstance(insemination['tohumlama_tarihi'], datetime):
+                                    insemination['tohumlama_tarihi'] = datetime.fromisoformat(insemination['tohumlama_tarihi'])
+                            except ValueError:
+                                pass # Keep as string if not valid isoformat
+                
+                # General date fields (if any, like 'dogum_tarihi')
                 for key, value in animal.items():
                     if key.endswith('_dt') or key == 'beklenen_dogum_tarihi':
                         if isinstance(value, str):
                             try:
                                 animal[key] = datetime.fromisoformat(value)
                             except (ValueError, TypeError):
-                                animal[key] = None # Çevrilemezse None yap
+                                animal[key] = None # Set to None if conversion fails
             return data
 
     except FileNotFoundError:
@@ -77,3 +89,32 @@ def load_animals() -> Optional[List[Dict[str, Any]]]:
         raise PersistenceError(f"Veri dosyası bozuk veya geçersiz JSON formatında: {e}") from e
     except IOError as e:
         raise PersistenceError(f"Veri dosyası okunurken bir G/Ç hatası oluştu: {e}") from e
+
+
+def save_sync_queue(queue: List[Dict[str, Any]]):
+    """
+    Senkronizasyon kuyruğunu bir JSON dosyasına kaydeder.
+    """
+    try:
+        with open(SYNC_QUEUE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(queue, f, ensure_ascii=False, indent=4, default=default_serializer)
+        print(f"Senkronizasyon kuyruğu başarıyla {SYNC_QUEUE_FILE} dosyasına kaydedildi.")
+    except (IOError, TypeError) as e:
+        raise PersistenceError(f"Senkronizasyon kuyruğu kaydedilirken bir hata oluştu: {e}") from e
+
+def load_sync_queue() -> Optional[List[Dict[str, Any]]]:
+    """
+    Senkronizasyon kuyruğunu bir JSON dosyasından yükler.
+    """
+    try:
+        with open(SYNC_QUEUE_FILE, 'r', encoding='utf-8') as f:
+            content = f.read()
+            if not content:
+                return [] # Empty file means empty queue
+            return json.loads(content)
+    except FileNotFoundError:
+        return [] # No queue file means empty queue
+    except json.JSONDecodeError as e:
+        raise PersistenceError(f"Senkronizasyon kuyruk dosyası bozuk veya geçersiz JSON formatında: {e}") from e
+    except IOError as e:
+        raise PersistenceError(f"Senkronizasyon kuyruk dosyası okunurken bir G/Ç hatası oluştu: {e}") from e

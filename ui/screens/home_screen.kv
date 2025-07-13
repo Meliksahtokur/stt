@@ -8,18 +8,27 @@
         MDTopAppBar:
             title: "Sürü Yönetimi"
             right_action_items: [["logout", lambda x: app.auth_manager.sign_out()]]
-        ScrollView:
-            RecycleView:
-                id: animal_list
-                view_class: 'AnimalItem'
-                RecycleBoxLayout:
-                    default_size: None, dp(56)
-                    default_size_hint: 1, None
-                    size_hint_y: None
-                    height: self.minimum_height
-                    orientation: 'vertical'
-                    spacing: dp(10)
-                    padding: dp(10)
+
+        MDBoxLayout:
+            size_hint_y: None
+            height: "48dp"
+            padding: "10dp"
+            MDTextField:
+                id: search_field
+                hint_text: "İsim veya küpe numarasına göre ara..."
+                on_text: root.filter_list(self.text)
+
+        RecycleView:
+            id: animal_list
+            view_class: 'AnimalItem'
+            RecycleBoxLayout:
+                default_size: None, dp(56)
+                default_size_hint: 1, None
+                size_hint_y: None
+                height: self.minimum_height
+                orientation: 'vertical'
+                spacing: dp(10)
+                padding: dp(10)
         MDFloatingActionButton:
             icon: "plus"
             pos_hint: {"center_x": 0.5, "center_y": 0.1}
