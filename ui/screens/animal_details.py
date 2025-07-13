@@ -2,25 +2,23 @@ from kivymd.uix.screen import MDScreen
 from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 from kivymd.uix.list import OneLineListItem, TwoLineListItem
 from kivymd.uix.dialog import MDDialog
-from kivymd.uix.button import MDFlatButton, MDRaisedButton
+from kivymd.uix.button import MDRaisedButton
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label # Import Label
-from kivymd.uix.textfield import MDTextField # Import MDTextField
-from src.persistence import save_animals, load_animals
-from src.sync_manager import SyncManager
+from kivy.uix.label import Label
+from kivymd.uix.textfield import MDTextField
+# No need for save_animals, load_animals here as sync_manager handles it
+# from src.persistence import save_animals, load_animals
+# from src.sync_manager import SyncManager # Not directly initialized here anymore
 import asyncio
+from kivymd.app import MDApp # Import MDApp to access global app properties
+from ui.utils.dialogs import show_error, show_success # Import the centralized dialog utility
 
 class AnimalDetailsScreen(MDScreen):
     animal_data = ObjectProperty(None)
     animal_uuid = StringProperty("")
     edit_mode = BooleanProperty(False)
-    dialog = ObjectProperty(None)
-    sync_manager = ObjectProperty(None)
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.sync_manager = SyncManager()
+    # dialog = ObjectProperty(None) # No longer needed, as dialogs are centralized
+    # sync_manager = ObjectProperty(None) # No longer initialized here
 
     def set_animal_data(self, animal_data):
         self.animal_data = animal_data
@@ -55,43 +53,39 @@ class AnimalDetailsScreen(MDScreen):
         self.populate_list()
 
     async def save_changes(self):
+        app = MDApp.get_running_app()
+        # Check for permission before proceeding
+        if app.permissions_manager and not app.permissions_manager.can_edit_animal(self.animal_uuid):
+            show_error("You do not have permission to edit this animal.")
+            return
+
         if self.edit_mode:
             updated_animal = self.animal_data.copy()
             for i in range(0, self.ids.animal_details_list.children.__len__()):
                 if isinstance(self.ids.animal_details_list.children[i], BoxLayout):
-                    key = self.ids.animal_details_list.children[i].children[0].text.replace(":", "")
-                    value = self.ids.animal_details_list.children[i].children[1].text
-                    updated_animal[key] = value
+                    # Ensure child widgets exist and are accessible
+                    if len(self.ids.animal_details_list.children[i].children) >= 2:
+                        key_label = self.ids.animal_details_list.children[i].children[0]
+                        value_input = self.ids.animal_details_list.children[i].children[1]
+
+                        # Extract key from label (e.g., "key:")
+                        key = key_label.text.replace(":", "").strip()
+                        value = value_input.text
+                        updated_animal[key] = value
             try:
-                await self.sync_manager.update_animal(self.animal_uuid, updated_animal)
-                self.show_success_dialog("Değişiklikler kaydedildi.")
-                self.edit_mode = False
-                self.ids.edit_button.text = "Düzenle"
-                self.populate_list()
+                # Use the app's sync_manager
+                if app.sync_manager:
+                    await app.sync_manager.update_animal(self.animal_uuid, updated_animal)
+                    show_success("Değişiklikler kaydedildi.")
+                    self.edit_mode = False
+                    self.ids.edit_button.text = "Düzenle"
+                    self.populate_list()
+                else:
+                    show_error("Sync manager not initialized. Please log in.")
             except Exception as e:
-                self.show_error_dialog(f"Değişiklikler kaydedilirken hata oluştu: {e}")
+                show_error(f"Değişiklikler kaydedilirken hata oluştu: {e}")
         else:
             self.toggle_edit_mode()
-
-    def show_error_dialog(self, message):
-        if not self.dialog:
-            self.dialog = MDDialog(
-                title="Hata",
-                text=message,
-                buttons=[MDFlatButton(text="Tamam", on_release=lambda x: self.dialog.dismiss())],
-            )
-        self.dialog.text = message
-        self.dialog.open()
-
-    def show_success_dialog(self, message):
-        if not self.dialog:
-            self.dialog = MDDialog(
-                title="Başarılı",
-                text=message,
-                buttons=[MDFlatButton(text="Tamam", on_release=lambda x: self.dialog.dismiss())],
-            )
-        self.dialog.text = message
-        self.dialog.open()
 
     def on_kv_post(self, base_widget):
         self.ids.edit_button = MDRaisedButton(text="Düzenle", on_press=lambda x: asyncio.run(self.save_changes()), size_hint_y=None, height=40)

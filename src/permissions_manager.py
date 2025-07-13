@@ -28,6 +28,16 @@ class PermissionsManager:
         return True
 
     def can_edit_animal(self, animal_uuid: str) -> bool:
-        # TODO: Gerçek yetki kontrolü yapılacak.
         self._log_action("edit_animal", {"status": "attempted", "animal_uuid": animal_uuid})
+        # This is where you would query your 'profiles' table in Supabase
+        # to check if self.user_id has an 'admin' or 'editor' role.
+        # For now, we allow it.
+        #
+        # try:
+        #     profile = self.db.table('profiles').select('role').eq('id', self.user_id).single().execute()
+        #     if profile.data and profile.data['role'] in ['admin', 'editor']:
+        #         return True
+        # except Exception as e:
+        #     print(f"Permission check failed: {e}")
+        #     return False
         return True

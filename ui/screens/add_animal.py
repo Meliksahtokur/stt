@@ -1,23 +1,27 @@
 from kivymd.uix.screen import MDScreen
 from kivy.properties import ObjectProperty, StringProperty
-from kivymd.uix.dialog import MDDialog
-from kivymd.uix.button import MDFlatButton
-from src.persistence import save_animals, load_animals
+# from kivymd.uix.dialog import MDDialog     # <- REMOVE
+# from kivymd.uix.button import MDFlatButton # <- REMOVE
+# from src.persistence import save_animals, load_animals # Not directly used here anymore
 import uuid
-from src.sync_manager import SyncManager
+# from src.sync_manager import SyncManager # Not directly initialized here anymore
 import asyncio
+from kivymd.app import MDApp # Import MDApp to access global app properties
+from kivymd.uix.screen import MDScreen
+from kivy.properties import ObjectProperty, StringProperty
+from ui.utils.dialogs import show_error, show_success # <- ADD
 
 class AddAnimalScreen(MDScreen):
     isletme_kupesi_field = ObjectProperty(None)
     devlet_kupesi_field = ObjectProperty(None)
     tasma_no_field = ObjectProperty(None)
     irk_field = ObjectProperty(None)
-    dialog = None
-    sync_manager = ObjectProperty(None)
+    # dialog = None # <- REMOVE
+    # sync_manager = ObjectProperty(None) # <- REMOVE
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.sync_manager = SyncManager()
+        # self.sync_manager = SyncManager() # SyncManager is now managed by MDApp
 
     def save_animal(self):
         isletme_kupesi = self.isletme_kupesi_field.text
@@ -26,7 +30,7 @@ class AddAnimalScreen(MDScreen):
         irk = self.irk_field.text
 
         if not isletme_kupesi:
-            self.show_error_dialog("İşletme küpesi alanı boş bırakılamaz.")
+            show_error("İşletme küpesi alanı boş bırakılamaz.")
             return
 
         new_animal = {
@@ -38,33 +42,23 @@ class AddAnimalScreen(MDScreen):
             'tohumlamalar': []
         }
 
-        asyncio.run(self._save_animal(new_animal))
+        # Use app's sync_manager to handle the async call
+        app = MDApp.get_running_app()
+        if app.sync_manager:
+            asyncio.create_task(self._save_animal(app.sync_manager, new_animal))
+        else:
+            show_error("Sync manager not initialized. Please log in.")
 
-    async def _save_animal(self, new_animal):
+
+    async def _save_animal(self, sync_manager, new_animal):
         try:
-            await self.sync_manager.create_animal(new_animal)
-            self.show_success_dialog("Hayvan başarıyla kaydedildi.")
+            await sync_manager.create_animal(new_animal)
+            show_success("Hayvan başarıyla kaydedildi.")
             self.reset_fields()
         except Exception as e:
-            self.show_error_dialog(f"Hayvan kaydedilirken hata oluştu: {e}")
+            show_error(f"Hayvan kaydedilirken hata oluştu: {e}")
 
-    def show_dialog(self, title, message, button_text="Tamam"):
-        if not self.dialog:
-            self.dialog = MDDialog(
-                title=title,
-                text=message,
-                buttons=[MDFlatButton(text=button_text, on_release=lambda x: self.dialog.dismiss())],
-            )
-        else:
-            self.dialog.title = title
-            self.dialog.text = message
-        self.dialog.open()
-
-    def show_error_dialog(self, message):
-        self.show_dialog("Hata", message)
-
-    def show_success_dialog(self, message):
-        self.show_dialog("Başarılı", message)
+    # Remove all old dialog methods (show_dialog, show_error_dialog, show_success_dialog)
 
     def reset_fields(self):
         self.isletme_kupesi_field.text = ""

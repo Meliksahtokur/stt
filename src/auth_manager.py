@@ -15,41 +15,76 @@ class AuthManagerError(Exception):
     pass
 
 class AuthManager:
-    def __init__(self):
+    def __init__(self, on_success=None, on_error=None):
         try:
             self.supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+            self._on_success_callback = on_success
+            self._on_error_callback = on_error
         except Exception as e:
+            if self._on_error_callback:
+                self._on_error_callback(f"Supabase istemcisi başlatılamadı: {e}")
             raise AuthManagerError(f"Supabase istemcisi başlatılamadı: {e}")
 
-    def sign_up(self, email, password):
+    async def sign_up(self, email, password):
         try:
             res = self.supabase.auth.sign_up({"email": email, "password": password})
             if res.user:
+                if self._on_success_callback:
+                    self._on_success_callback(res.user)
                 return res.user
             if res.error:
-                raise AuthManagerError(f"Kayıt başarısız: {res.error.message}")
+                error_msg = f"Kayıt başarısız: {res.error.message}"
+                if self._on_error_callback:
+                    self._on_error_callback(error_msg)
+                raise AuthManagerError(error_msg)
         except Exception as e:
-            raise AuthManagerError(f"Kayıt sırasında beklenmedik bir hata oluştu: {e}")
+            error_msg = f"Kayıt sırasında beklenmedik bir hata oluştu: {e}"
+            if self._on_error_callback:
+                self._on_error_callback(error_msg)
+            raise AuthManagerError(error_msg)
 
-    def sign_in(self, email, password):
+    async def sign_in(self, email, password):
         try:
             res = self.supabase.auth.sign_in_with_password({"email": email, "password": password})
             if res.user:
+                if self._on_success_callback:
+                    self._on_success_callback(res.user)
                 return res.user
             if res.error:
-                raise AuthManagerError(f"Giriş başarısız: {res.error.message}")
+                error_msg = f"Giriş başarısız: {res.error.message}"
+                if self._on_error_callback:
+                    self._on_error_callback(error_msg)
+                raise AuthManagerError(error_msg)
         except Exception as e:
-            raise AuthManagerError(f"Giriş sırasında beklenmedik bir hata oluştu: {e}")
+            error_msg = f"Giriş sırasında beklenmedik bir hata oluştu: {e}"
+            if self._on_error_callback:
+                self._on_error_callback(error_msg)
+            raise AuthManagerError(error_msg)
 
-    def sign_out(self):
+    async def sign_out(self):
         try:
             self.supabase.auth.sign_out()
+            if self._on_success_callback:
+                self._on_success_callback(None) # Notify that user is logged out
         except Exception as e:
-            raise AuthManagerError(f"Çıkış sırasında beklenmedik bir hata oluştu: {e}")
+            error_msg = f"Çıkış sırasında beklenmedik bir hata oluştu: {e}"
+            if self._on_error_callback:
+                self._on_error_callback(error_msg)
+            raise AuthManagerError(error_msg)
 
-    def get_current_user(self):
+    async def check_session(self):
         try:
-            return self.supabase.auth.get_user().user
+            user = self.supabase.auth.get_user().user
+            if user:
+                if self._on_success_callback:
+                    self._on_success_callback(user)
+            else:
+                if self._on_success_callback:
+                    self._on_success_callback(None)
+            return user
         except Exception as e:
-            # Bu genellikle oturumun süresinin dolduğu anlamına gelir, hata olarak değil, None olarak ele alalım.
+            # This usually means no active session or session expired.
+            # We don't necessarily show an error, but ensure no user is set.
+            if self._on_success_callback:
+                self._on_success_callback(None)
             return None

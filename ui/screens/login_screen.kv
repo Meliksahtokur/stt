@@ -1,0 +1,41 @@
+<LoginScreen>:
+    name: 'login'
+    MDBoxLayout:
+        orientation: 'vertical'
+        padding: "40dp"
+        spacing: "20dp"
+        adaptive_height: True
+        pos_hint: {'center_x': 0.5, 'center_y': 0.5}
+        size_hint_x: 0.8
+
+        MDLabel:
+            text: "Animal Tracker"
+            halign: "center"
+            font_style: "H4"
+            size_hint_y: None
+            height: self.texture_size[1]
+            padding_y: "15dp"
+
+        MDTextField:
+            id: email
+            hint_text: "Email"
+            mode: "rectangle"
+            helper_text_mode: "on_focus"
+
+        MDTextField:
+            id: password
+            hint_text: "Password"
+            password: True
+            mode: "rectangle"
+            helper_text_mode: "on_focus"
+
+        MDRaisedButton:
+            text: "SIGN IN"
+            pos_hint: {'center_x': 0.5}
+            on_press: root.sign_in()
+            md_bg_color: app.theme_cls.primary_color
+
+        MDTextButton:
+            text: "Don't have an account? Sign Up"
+            pos_hint: {'center_x': 0.5}
+            on_press: root.sign_up()
