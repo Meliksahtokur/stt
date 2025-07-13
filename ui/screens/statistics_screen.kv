@@ -6,6 +6,47 @@
             title: "İstatistikler"
             left_action_items: [["arrow-left", lambda x: app.root.current = 'home']]
         ScrollView:
-            MDList:
-                id: statistics_list
+            MDBoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: "10dp"
+                spacing: "10dp"
+
+                MDList:
+                    id: statistics_list
+                    size_hint_y: None
+                    height: self.minimum_height
+
+                MDLabel:
+                    text: "Irk Dağılımı Grafiği"
+                    halign: "center"
+                    font_style: "H6"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    padding_y: "15dp"
+
+                Image:
+                    id: breed_pie_chart_image
+                    source: root.breed_pie_chart_src
+                    size_hint_y: None
+                    height: "300dp" # Fixed height for the chart
+                    allow_stretch: True
+                    keep_ratio: True
+
+                MDLabel:
+                    text: "Aylara Göre Doğum Sayısı Grafiği"
+                    halign: "center"
+                    font_style: "H6"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    padding_y: "15dp"
+
+                Image:
+                    id: births_bar_chart_image
+                    source: root.births_bar_chart_src
+                    size_hint_y: None
+                    height: "300dp" # Fixed height for the chart
+                    allow_stretch: True
+                    keep_ratio: True
 

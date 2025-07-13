@@ -7,5 +7,6 @@ buildozer
 pandas
 openpyxl
 supabase
+matplotlib
 python-dotenv
 supabase

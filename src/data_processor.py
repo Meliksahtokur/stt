@@ -31,6 +31,16 @@ def process_animal_records(all_animals_from_db: List[Dict[str, Any]]) -> List[Di
             animal['sinif'] = classify_animal(insemination_dates)
             animal['display_name'] = get_display_name(animal)
 
+            # Convert 'dogum_tarihi' if it exists and is a string
+            dogum_tarihi_str = animal.get('dogum_tarihi')
+            if isinstance(dogum_tarihi_str, str):
+                try:
+                    # Assuming ISO format from DB/persistence
+                    animal['dogum_tarihi'] = datetime.fromisoformat(dogum_tarihi_str)
+                except ValueError:
+                    # If not ISO format, keep it as string or set to None
+                    animal['dogum_tarihi'] = None # Set to None if conversion fails
+
             if insemination_dates:
                 animal['son_tohumlama'] = sorted(inseminations, key=lambda x: x['tohumlama_tarihi'], reverse=True)[0]
             else:
