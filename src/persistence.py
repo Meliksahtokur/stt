@@ -10,7 +10,7 @@ import json
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
-from config.settings import LOCAL_DATA_FILE
+from config.settings import LOCAL_DATA_FILE, SYNC_QUEUE_FILE
 
 class PersistenceError(Exception):
     """Dosya okuma/yazma işlemleri sırasında oluşan hatalar için özel istisna sınıfı."""
