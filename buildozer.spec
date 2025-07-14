@@ -3,7 +3,7 @@ title = Animal Tracker
 package.name = animaltracker
 package.domain = org.example
 source.include_exts = py,png,jpg,kv,atlas
-requirements = python3,kivy
+requirements = python3,kivy,kivymd,supabase-py,pandas,matplotlib
 android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
 
 # (str) Source code where the main.py live
@@ -34,7 +34,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy
+requirements = python3,kivy,kivymd,supabase-py,pandas,matplotlib
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -98,10 +98,10 @@ fullscreen = 0
 #android.features = android.hardware.usb.host
 
 # (int) Target Android API, should be as high as possible.
-#android.api = 31
+android.api = 31
 
 # (int) Minimum API your APK / AAB will support.
-#android.minapi = 21
+android.minapi = 21
 
 # (int) Android SDK version to use
 #android.sdk = 20
@@ -136,7 +136,8 @@ fullscreen = 0
 # android.accept_sdk_license = False
 
 # (str) Android entry point, default is ok for Kivy-based app
-#android.entrypoint = org.kivy.android.PythonActivity
+android.entrypoint = org.kivy.android.PythonActivity
+android.force_build_entrypoint = ui.app
 
 # (str) Full name including package path of the Java class that implements Android Activity
 # use that parameter together with android.entrypoint to set custom Java class instead of PythonActivity
