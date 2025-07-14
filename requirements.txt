@@ -9,4 +9,4 @@ openpyxl
 supabase
 matplotlib
 python-dotenv
-supabase
+kivymd
