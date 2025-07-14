@@ -94,8 +94,11 @@ fullscreen = 0
 # (list) features (adds uses-feature -tags to manifest)
 #android.features = android.hardware.usb.host
 
+# (str) Android build tools version.
+android.build_tools_version = 30.0.3
+
 # (int) Target Android API, should be as high as possible.
-android.api = 31
+android.api = 30
 
 # (int) Minimum API your APK / AAB will support.
 android.minapi = 21
