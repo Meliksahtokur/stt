@@ -3,7 +3,6 @@ title = Animal Tracker
 package.name = animaltracker
 package.domain = org.example
 source.include_exts = py,png,jpg,kv,atlas
-requirements = python3,kivy,kivymd,supabase-py,pandas,matplotlib
 android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
 
 # (str) Source code where the main.py live
@@ -136,7 +135,7 @@ android.minapi = 21
 # android.accept_sdk_license = False
 
 # (str) Android entry point, default is ok for Kivy-based app
-android.entrypoint = org.kivy.android.PythonActivity
+#android.entrypoint = org.kivy.android.PythonActivity
 android.force_build_entrypoint = ui.app
 
 # (str) Full name including package path of the Java class that implements Android Activity
