@@ -3,7 +3,6 @@ beautifulsoup4
 tabulate
 Kivy
 plyer
-buildozer
 pandas
 openpyxl
 supabase
