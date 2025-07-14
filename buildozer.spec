@@ -95,7 +95,7 @@ fullscreen = 0
 #android.features = android.hardware.usb.host
 
 # (str) Android build tools version.
-android.build_tools_version = 36.0.0
+android.build_tools_version = 34.0.0
 
 # (int) Target Android API, should be as high as possible.
 android.api = 30
@@ -107,7 +107,7 @@ android.minapi = 21
 #android.sdk = 20
 
 # (str) Android NDK version to use
-#android.ndk = 23b
+android.ndk = 25b
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
 #android.ndk_api = 21
@@ -281,7 +281,7 @@ android.force_build_entrypoint = ui.app
 
 # (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
 # In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing
