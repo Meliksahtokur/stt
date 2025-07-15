@@ -2,7 +2,7 @@
 title = Animal Tracker
 package.name = animaltracker
 package.domain = org.example
-source.include_exts = py,png,jpg,kv,atlas
+source.include_exts = py,png,jpg,kv,atlas,json
 android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
 
 # (str) Source code where the main.py live
@@ -41,7 +41,7 @@ requirements = python3,kivy,kivymd,supabase-py,pandas,numpy,matplotlib,requests,
 #presplash.filename = %(source.dir)s/data/presplash.png
 
 # (str) Icon of the application
-#icon.filename = %(source.dir)s/data/icon.png
+icon.filename = icon.png
 
 # (list) Supported orientations
 # Valid options are: landscape, portrait, portrait-reverse or landscape-reverse
@@ -448,4 +448,3 @@ warn_on_root = 1
 #    Then, invoke the command line with the "demo" profile:
 #
 #buildozer --profile demo android debug
-icon.filename = icon.png
