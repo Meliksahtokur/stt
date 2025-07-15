@@ -26,8 +26,13 @@ jobs:
         restore-keys: |
           buildozer-global-
           
+    - name: NDK Bağımlılıklarını Kur
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends libc6-i386 libncurses5 libstdc++6 lib32z1
+
     - name: ⚙️ Build with Buildozer
-      uses: ArtemSBulgakov/buildozer-action@v1
+      uses: ArtemSBulgakov/buildozer-action@v1.2.2
       with:
         command: buildozer android debug
         repository_root: .
