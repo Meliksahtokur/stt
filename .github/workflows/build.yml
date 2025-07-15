@@ -1,63 +1,33 @@
-name: Build Android APK
-
+name: Build arm64 APK
 on:
-  workflow_dispatch:
   push:
-    branches: [ main, master ]
+    branches: [ arm64 ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: 📦 Checkout repository
-      uses: actions/checkout@v4
-      
-    - name: 🐍 Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-        
-    - name: 💾 Cache Buildozer global directory
-      uses: actions/cache@v3
-      with:
-        path: .buildozer-global
-        key: buildozer-global-${{ hashFiles('buildozer.spec') }}
-        restore-keys: |
-          buildozer-global-
-          
-    - name: NDK Bağımlılıklarını Kur
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends libc6-i386 libncurses5 libstdc++6 lib32z1
-
-    - name: ⚙️ Build with Buildozer
-      uses: ArtemSBulgakov/buildozer-action@v1.2.2
-      with:
-        command: buildozer android debug
-        repository_root: .
-        workdir: .
-        buildozer_version: stable
-      env:
-        ANDROIDAPI: "31"
-        ANDROIDMINAPI: "21"
-        ANDROIDNDK: "25b"
-        BUILDOZER_LOG_LEVEL: "2"
-        
-    - name: 📱 Upload APK artifact
-      uses: actions/upload-artifact@v3
-      if: success()
-      with:
-        name: android-apk-${{ github.run_number }}
-        path: bin/*.apk
-        retention-days: 30
-        
-    - name: 📄 Upload build logs on failure
-      uses: actions/upload-artifact@v3
-      if: failure()
-      with:
-        name: build-logs-${{ github.run_number }}
-        path: |
-          .buildozer/android/platform/build-*/
-          .buildozer/android/logs/
-        retention-days: 7
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip openjdk-8-jdk unzip
+          # NDK'nın ihtiyaç duyabileceği 32-bit uyumluluk kütüphaneleri (önceki hatadan ders çıkarıldı)
+          sudo apt-get install -y --no-install-recommends libc6-i386 libncurses5 libstdc++6 lib32z1
+      - name: Install Buildozer
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython
+      - name: Build APK (arm64-v8a only)
+        run: |
+          buildozer -v android debug
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: stt-arm64-apk
+          path: bin/*.apk
