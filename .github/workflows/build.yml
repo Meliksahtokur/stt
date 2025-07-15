@@ -15,6 +15,11 @@ jobs:
     - name: Kodu Checkout Yap
       uses: actions/checkout@v4
 
+    - name: NDK Bağımlılıklarını Kur
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends libc6-i386 libncurses5 libstdc++6 lib32z1
+
     - name: Buildozer ile APK Oluştur
       uses: ArtemSBulgakov/buildozer-action@v1
       id: buildozer
