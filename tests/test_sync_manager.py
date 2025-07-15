@@ -65,27 +65,12 @@ class TestSyncManager(unittest.IsolatedAsyncioTestCase):
         with self.assertRaisesRegex(SyncManagerError, "Uzak veriler çekilirken hata oluştu"):
             await self.sync_manager._get_remote_animals()
 
-    async def test_create_animal_offline_first(self):
-        self.mock_load_animals.return_value = []
-        mock_new_animal = {"isletme_kupesi": "A001"}
-        
-        await self.sync_manager.create_animal(mock_new_animal.copy()) # Pass a copy to avoid modification issues during test
-
-        self.mock_save_animals.assert_called_once()
-        saved_animals = self.mock_save_animals.call_args[0][0]
-        self.assertEqual(len(saved_animals), 1)
-        self.assertEqual(saved_animals[0]['isletme_kupesi'], 'A001')
-        self.assertIsNotNone(saved_animals[0].get('uuid'))
-        self.assertEqual(saved_animals[0]['user_id'], self.user_id)
-        self.assertEqual(saved_animals[0]['sync_status'], 'pending_create')
-        self.assertIsNotNone(saved_animals[0].get('last_modified'))
-
     @patch.object(SyncManager, '_add_to_sync_queue', new_callable=MagicMock)
-    async def test_create_animal_offline_first(self, mock_add_to_sync_queue): # Add mock to parameters
+    async def test_create_animal_offline_first(self, mock_add_to_sync_queue):
         self.mock_load_animals.return_value = []
         mock_new_animal = {"isletme_kupesi": "A001"}
         
-        await self.sync_manager.create_animal(mock_new_animal.copy()) # Pass a copy to avoid modification issues during test
+        await self.sync_manager.create_animal(mock_new_animal.copy())
 
         self.mock_save_animals.assert_called_once()
         saved_animals = self.mock_save_animals.call_args[0][0]
@@ -96,7 +81,7 @@ class TestSyncManager(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(saved_animals[0]['sync_status'], 'pending_create')
         self.assertIsNotNone(saved_animals[0].get('last_modified'))
 
-        mock_add_to_sync_queue.assert_called_once_with('create', saved_animals[0]) # Use the local mock
+        mock_add_to_sync_queue.assert_called_once_with('create', saved_animals[0])
 
     @patch.object(SyncManager, '_add_to_sync_queue', new_callable=MagicMock)
     async def test_update_animal_offline_first(self, mock_add_to_sync_queue): # Add mock to parameters

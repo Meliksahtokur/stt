@@ -108,7 +108,7 @@ def get_animal_specific_stats(animal_uuid: str, all_processed_data: List[Dict[st
         return {"hata": "Hayvan bulunamadı."}
 
     total_inseminations = len(animal_record.get('tohumlamalar', []))
-    last_insemination = animal_record.get('son_tohumlama', {}).get('tohumlama_tarihi')
+    last_insemination = animal_record.get('son_tohumlama') # Assuming this is already a datetime object from data_processor
     
     # Placeholder for pregnancy success rate if data becomes available
     # For now, it's just a general note based on the overall animal status.
