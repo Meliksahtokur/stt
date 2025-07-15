@@ -1,37 +1,58 @@
-name: Buildozer Android CI
+name: Build Android APK
 
 on:
-  # Bu workflow'u manuel olarak çalıştırmak için bir düğme ekler
   workflow_dispatch:
-  # veya master/main branch'e her push yapıldığında otomatik çalışsın
-  # push:
-  #   branches: [ "master", "main" ]
+  push:
+    branches: [ main, master ]
 
 jobs:
   build:
-    runs-on: ubuntu-latest # Derleme işlemi Ubuntu sanal makinesinde yapılacak
-
+    runs-on: ubuntu-latest
+    
     steps:
-    - name: Kodu Checkout Yap
+    - name: 📦 Checkout repository
       uses: actions/checkout@v4
-
-    - name: NDK Bağımlılıklarını Kur
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends libc6-i386 libncurses5 libstdc++6 lib32z1
-
-    - name: Buildozer ile APK Oluştur
+      
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8'
+        
+    - name: 💾 Cache Buildozer global directory
+      uses: actions/cache@v3
+      with:
+        path: .buildozer-global
+        key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+        restore-keys: |
+          buildozer-global-
+          
+    - name: ⚙️ Build with Buildozer
       uses: ArtemSBulgakov/buildozer-action@v1
-      id: buildozer
       with:
-        # Buildozer'ın çalıştıracağı komut
-        command: buildozer -v android debug
-        # Hangi branch'i derleyeceği
-        # branch: ${{ github.ref_name }} # Mevcut branch'i kullan
-
-    - name: Oluşturulan APK'yı Artifact Olarak Yükle
-      uses: actions/upload-artifact@v4
+        command: buildozer android debug
+        repository_root: .
+        workdir: .
+        buildozer_version: stable
+      env:
+        ANDROIDAPI: "31"
+        ANDROIDMINAPI: "21"
+        ANDROIDNDK: "25b"
+        BUILDOZER_LOG_LEVEL: "2"
+        
+    - name: 📱 Upload APK artifact
+      uses: actions/upload-artifact@v3
+      if: success()
       with:
-        name: package
-        # Buildozer'ın APK'yı koyduğu klasör
-        path: ${{ steps.buildozer.outputs.filename }}
+        name: android-apk-${{ github.run_number }}
+        path: bin/*.apk
+        retention-days: 30
+        
+    - name: 📄 Upload build logs on failure
+      uses: actions/upload-artifact@v3
+      if: failure()
+      with:
+        name: build-logs-${{ github.run_number }}
+        path: |
+          .buildozer/android/platform/build-*/
+          .buildozer/android/logs/
+        retention-days: 7
