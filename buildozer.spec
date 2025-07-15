@@ -129,7 +129,7 @@ android.ndk = 25b
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.kivy.android.PythonActivity
-android.force_build_entrypoint = ui.app
+#android.force_build_entrypoint = ui.app
 
 # (str) Full name including package path of the Java class that implements Android Activity
 # use that parameter together with android.entrypoint to set custom Java class instead of PythonActivity
