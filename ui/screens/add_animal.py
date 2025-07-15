@@ -1,10 +1,4 @@
-from kivymd.uix.screen import MDScreen
-from kivy.properties import ObjectProperty, StringProperty
-# from kivymd.uix.dialog import MDDialog     # <- REMOVE
-# from kivymd.uix.button import MDFlatButton # <- REMOVE
-# from src.persistence import save_animals, load_animals # Not directly used here anymore
 import uuid
-# from src.sync_manager import SyncManager # Not directly initialized here anymore
 import asyncio
 from kivymd.app import MDApp # Import MDApp to access global app properties
 from kivymd.uix.screen import MDScreen
@@ -16,12 +10,6 @@ class AddAnimalScreen(MDScreen):
     devlet_kupesi_field = ObjectProperty(None)
     tasma_no_field = ObjectProperty(None)
     irk_field = ObjectProperty(None)
-    # dialog = None # <- REMOVE
-    # sync_manager = ObjectProperty(None) # <- REMOVE
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # self.sync_manager = SyncManager() # SyncManager is now managed by MDApp
 
     def save_animal(self):
         isletme_kupesi = self.isletme_kupesi_field.text
@@ -57,8 +45,6 @@ class AddAnimalScreen(MDScreen):
             self.reset_fields()
         except Exception as e:
             show_error(f"Hayvan kaydedilirken hata oluştu: {e}")
-
-    # Remove all old dialog methods (show_dialog, show_error_dialog, show_success_dialog)
 
     def reset_fields(self):
         self.isletme_kupesi_field.text = ""
