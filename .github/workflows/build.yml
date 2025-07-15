@@ -1,0 +1,32 @@
+name: Buildozer Android CI
+
+on:
+  # Bu workflow'u manuel olarak çalıştırmak için bir düğme ekler
+  workflow_dispatch:
+  # veya master/main branch'e her push yapıldığında otomatik çalışsın
+  # push:
+  #   branches: [ "master", "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Derleme işlemi Ubuntu sanal makinesinde yapılacak
+
+    steps:
+    - name: Kodu Checkout Yap
+      uses: actions/checkout@v4
+
+    - name: Buildozer ile APK Oluştur
+      uses: ArtemSBulgakov/buildozer-action@v1.2.1
+      id: buildozer
+      with:
+        # Buildozer'ın çalıştıracağı komut
+        command: buildozer -v android debug
+        # Hangi branch'i derleyeceği
+        # branch: ${{ github.ref_name }} # Mevcut branch'i kullan
+
+    - name: Oluşturulan APK'yı Artifact Olarak Yükle
+      uses: actions/upload-artifact@v4
+      with:
+        name: package
+        # Buildozer'ın APK'yı koyduğu klasör
+        path: ${{ steps.buildozer.outputs.filename }}
