@@ -1,37 +1,17 @@
 [app]
-title = Hayvan Takip Sistemi
-package.name = animaltracker
-package.domain = org.example
-source.include_exts = py,png,jpg,kv,atlas,json,db
-
-# (str) Source code where the main.py live
+title = STT
+package.name = stt
+package.domain = com.meliksahtokur
 source.dir = .
-source.main = main.py
-
-
-# (list) List of inclusions using pattern matching
-#source.include_patterns = assets/*,images/*.png
-
-# (list) Source files to exclude (let empty to not exclude anything)
-#source.exclude_exts = spec
-
-# (list) List of directory to exclude (let empty to not exclude anything)
-#source.exclude_dirs = tests, bin, venv
-
-# (list) List of exclusions using pattern matching
-# Do not prefix with './'
-#source.exclude_patterns = license,images/*/*.jpg
-
-# (str) Application versioning (method 1)
-version = 0.1
+source.include_exts = py,png,jpg,kv,atlas,txt,json
+version = 1.0.0
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
 # version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
-# comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,kivymd,requests,beautifulsoup4,tabulate,plyer,pandas,numpy,openpyxl,supabase-py,matplotlib,python-dotenv
+requirements = python3,kivy==2.3.0,plyer,android_permissions
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -61,7 +41,7 @@ orientation = portrait
 osx.python_version = 3
 
 # Kivy version to use
-osx.kivy_version = 1.9.1
+osx.kivy_version = 2.3.0
 
 #
 # Android specific
@@ -271,10 +251,7 @@ android.enable_androidx = True
 # (bool) Copy library instead of making a libpymodules.so
 #android.copy_libs = 1
 
-# (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
-# In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
-android.archs = arm64-v8a,armeabi-v7a
-android.debug = 1
+android.archs = arm64-v8a
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
 # this is not the same as app version and should only be edited if you know what you're doing
