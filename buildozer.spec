@@ -47,65 +47,15 @@ osx.kivy_version = 2.3.0
 # Android specific
 #
 
-# (bool) Indicate if the application should be fullscreen or not
 fullscreen = 0
-
-# (string) Presplash background color (for android toolchain)
-# Supported formats are: #RRGGBB #AARRGGBB or one of the following names:
-# red, blue, green, black, white, gray, cyan, magenta, yellow, lightgray,
-# darkgray, grey, lightgrey, darkgrey, aqua, fuchsia, lime, maroon, navy,
-# olive, purple, silver, teal.
-#android.presplash_color = #FFFFFF
-
-# (string) Presplash animation using Lottie format.
-# see https://lottiefiles.com/ for examples and https://airbnb.design/lottie/
-# for general documentation.
-# Lottie files can be created using various tools, like Adobe After Effect or Synfig.
-#android.presplash_lottie = "path/to/lottie/file.json"
-
-# (str) Adaptive icon of the application (used if Android API level is 26+ at runtime)
-#icon.adaptive_foreground.filename = %(source.dir)s/data/icon_fg.png
-#icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
-
-# (list) Permissions
-# (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
-#android.permissions = android.permission.INTERNET, (name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=18)
-
-# (list) features (adds uses-feature -tags to manifest)
-#android.features = android.hardware.usb.host
-
-# (str) Android build tools version.
-# Android API ayarları
-android.api = 31
-android.minapi = 21
-android.ndk_api = 21
-android.sdk_api = 31
-
-# NDK sürümü
+android.permissions = RECORD_AUDIO, INTERNET
+android.api = 33
+android.minapi = 24
 android.ndk = 25b
-
-# (bool) Use --private data storage (True) or --dir public storage (False)
-#android.private_storage = True
-
-# (str) Android NDK directory (if empty, it will be automatically downloaded.)
-#android.ndk_path =
-
-# (str) Android SDK directory (if empty, it will be automatically downloaded.)
-#android.sdk_path =
-
-# (str) ANT directory (if empty, it will be automatically downloaded.)
-#android.ant_path =
-
-# (bool) If True, then skip trying to update the Android sdk
-# This can be useful to avoid excess Internet downloads or save time
-# when an update is due and you just want to test/build your package
-# android.skip_update = False
-
-# (bool) If True, then automatically accept SDK license
-# agreements. This is intended for automation only. If set to False,
-# the default, you will be shown the license when first running
-# buildozer.
-# android.accept_sdk_license = False
+android.skip_update = False
+android.accept_sdk_license = True
+android.logcat_filters = *:S python:D
+p4a.branch = master
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.kivy.android.PythonActivity
