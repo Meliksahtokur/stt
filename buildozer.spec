@@ -31,7 +31,7 @@ version = 0.1
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,kivymd,supabase-py,pandas,matplotlib,requests,beautifulsoup4,tabulate,plyer,openpyxl,python-dotenv
+requirements = python3,kivy,kivymd,supabase-py,pandas,numpy,matplotlib,requests,beautifulsoup4,tabulate,plyer,openpyxl,python-dotenv
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes

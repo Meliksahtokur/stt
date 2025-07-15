@@ -4,6 +4,7 @@ tabulate
 Kivy
 plyer
 pandas
+numpy
 openpyxl
 supabase
 matplotlib
