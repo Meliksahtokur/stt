@@ -1,6 +1,7 @@
 import asyncio # Import asyncio
 from kivymd.uix.screen import MDScreen
 from kivy.properties import ObjectProperty, StringProperty
+from kivy.uix.scrollview import ScrollView # Added for explicit import
 from kivymd.uix.list import OneLineListItem
 from src.statistics import calculate_statistics, get_animal_specific_stats, \
                            calculate_breed_distribution, generate_pie_chart_base64, \

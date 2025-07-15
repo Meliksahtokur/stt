@@ -1,9 +1,9 @@
 [app]
-title = Animal Tracker
+title = Hayvan Takip Sistemi
 package.name = animaltracker
 package.domain = org.example
-source.include_exts = py,png,jpg,kv,atlas,json
-android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE
+source.include_exts = py,png,jpg,kv,atlas,json,db
+android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,VIBRATE
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -23,7 +23,7 @@ source.dir = .
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.1
+version = 1.0.0
 
 # (str) Application versioning (method 2)
 # version.regex = __version__ = ['"](.*)['"]
@@ -98,16 +98,22 @@ fullscreen = 0
 android.build_tools_version = 34.0.0
 
 # (int) Target Android API, should be as high as possible.
-android.api = 30
+android.api = 33
 
 # (int) Minimum API your APK / AAB will support.
 android.minapi = 21
 
 # (int) Android SDK version to use
-#android.sdk = 20
+android.sdk = 33
 
 # (str) Android NDK version to use
 android.ndk = 25b
+
+# (bool) If True, then automatically accept SDK license
+# agreements. This is intended for automation only. If set to False,
+# the default, you will be shown the license when first running
+# buildozer.
+android.accept_sdk_license = True
 
 # (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
 android.ndk_api = 21
