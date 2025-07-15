@@ -6,7 +6,7 @@ plyer
 pandas
 numpy
 openpyxl
-supabase
+supabase-py
 matplotlib
 python-dotenv
 kivymd
