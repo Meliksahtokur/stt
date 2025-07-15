@@ -10,8 +10,6 @@ from kivy.uix.behaviors import FocusBehavior
 from kivy.properties import ObjectProperty, BooleanProperty, StringProperty
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 from kivymd.uix.list import OneLineAvatarIconListItem # Changed to OneLineAvatarIconListItem for consistency
-# from kivymd.uix.dialog import MDDialog # Removed, using centralized dialogs
-# from kivymd.uix.button import MDFlatButton # Removed, using centralized dialogs
 from kivy.clock import Clock
 from src.main import get_all_animal_data
 from src.data_processor import get_display_name
@@ -74,7 +72,6 @@ class AnimalItem(RecycleDataViewBehavior, OneLineAvatarIconListItem):
 
 class HomeScreen(MDScreen):
     _all_animals = [] # Cache the full list of animals for filtering
-    # dialog = None # Removed, using centralized dialogs
 
     def on_enter(self):
         Clock.schedule_once(self.load_animal_data)

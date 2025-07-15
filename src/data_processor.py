@@ -42,7 +42,9 @@ def process_animal_records(all_animals_from_db: List[Dict[str, Any]]) -> List[Di
                     animal['dogum_tarihi'] = None # Set to None if conversion fails
 
             if insemination_dates:
-                animal['son_tohumlama'] = sorted(inseminations, key=lambda x: x['tohumlama_tarihi'], reverse=True)[0]
+                # Find the latest insemination dictionary, then get its date as datetime object
+                latest_insemination_dict = sorted(inseminations, key=lambda x: datetime.fromisoformat(x['tohumlama_tarihi']), reverse=True)[0]
+                animal['son_tohumlama'] = datetime.fromisoformat(latest_insemination_dict['tohumlama_tarihi'])
             else:
                 animal['son_tohumlama'] = None
 

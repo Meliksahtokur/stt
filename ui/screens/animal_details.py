@@ -1,14 +1,9 @@
 from kivymd.uix.screen import MDScreen
 from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 from kivymd.uix.list import OneLineListItem, TwoLineListItem
-from kivymd.uix.dialog import MDDialog
-from kivymd.uix.button import MDRaisedButton
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivymd.uix.textfield import MDTextField
-# No need for save_animals, load_animals here as sync_manager handles it
-# from src.persistence import save_animals, load_animals
-# from src.sync_manager import SyncManager # Not directly initialized here anymore
 import asyncio
 from kivymd.app import MDApp # Import MDApp to access global app properties
 from ui.utils.dialogs import show_error, show_success # Import the centralized dialog utility
@@ -17,8 +12,6 @@ class AnimalDetailsScreen(MDScreen):
     animal_data = ObjectProperty(None)
     animal_uuid = StringProperty("")
     edit_mode = BooleanProperty(False)
-    # dialog = ObjectProperty(None) # No longer needed, as dialogs are centralized
-    # sync_manager = ObjectProperty(None) # No longer initialized here
 
     def set_animal_data(self, animal_data):
         self.animal_data = animal_data
