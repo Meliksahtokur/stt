@@ -119,8 +119,8 @@ if __name__ == "__main__":
     settings_path = os.path.join(project_root, 'config', 'settings.py')
     apply_fix_to_file(
         settings_path,
-        "GESTATATION_PERIOD_DAYS = 283", # Existing typo
-        "GESTATION_PERIOD_DAYS = 285"   # Corrected value
+        "GESTATATION_PERIOD_DAYS = 285", # Existing typo with current value
+        "GESTATION_PERIOD_DAYS = 285"   # Corrected spelling with same value
     )
 
     # 2. src/ui/statistics_screen.py eksik import - already handled based on chat context, but kept for robustness

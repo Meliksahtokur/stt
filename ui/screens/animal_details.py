@@ -81,6 +81,6 @@ class AnimalDetailsScreen(MDScreen):
             self.toggle_edit_mode()
 
     def on_kv_post(self, base_widget):
-        self.ids.edit_button = MDRaisedButton(text="Düzenle", on_press=lambda x: asyncio.run(self.save_changes()), size_hint_y=None, height=40)
+        self.ids.edit_button = MDRaisedButton(text="Düzenle", on_press=self.save_changes, size_hint_y=None, height=40)
         self.ids.animal_details_list.add_widget(self.ids.edit_button)
 
