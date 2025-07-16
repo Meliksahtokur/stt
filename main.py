@@ -53,6 +53,19 @@ class AnimalTrackerApp(MDApp):
 
         return sm
 
+    # New method to handle date picker for MDTextFields
+    def open_date_picker(self, target_field):
+        from kivymd.uix.picker import MDDatePicker
+        def on_date_save(instance, value, date_range):
+            target_field.text = value.strftime('%Y-%m-%d') # Format date to YYYY-MM-DD
+        
+        date_picker = MDDatePicker()
+        date_picker.bind(on_save=on_date_save)
+        date_picker.open()
+
+    def handle_auth_error(self, message):
+        show_error(message)
+
     def on_start(self):
         # Check for an existing session on app start
         asyncio.create_task(self.auth_manager.check_session())
