@@ -58,28 +58,7 @@ def load_animals() -> Optional[List[Dict[str, Any]]]:
                 print("Veri dosyası boş, yeni bir dosya oluşturulacak.")
                 return None
             data = json.loads(content)
-            
-            # Tarih alanlarını tekrar datetime objesine çevir
-            for animal in data:
-                # Assuming 'tohumlamalar' might contain date strings
-                if 'tohumlamalar' in animal and isinstance(animal['tohumlamalar'], list):
-                    for insemination in animal['tohumlamalar']:
-                        if 'tohumlama_tarihi' in insemination and isinstance(insemination['tohumlama_tarihi'], str):
-                            try:
-                                # Ensure we don't convert to datetime if it's already a datetime object (unlikely from JSON)
-                                if not isinstance(insemination['tohumlama_tarihi'], datetime):
-                                    insemination['tohumlama_tarihi'] = datetime.fromisoformat(insemination['tohumlama_tarihi'])
-                            except ValueError:
-                                pass # Keep as string if not valid isoformat
-                
-                # General date fields (if any, like 'dogum_tarihi')
-                for key, value in animal.items():
-                    if key.endswith('_dt') or key == 'beklenen_dogum_tarihi':
-                        if isinstance(value, str):
-                            try:
-                                animal[key] = datetime.fromisoformat(value)
-                            except (ValueError, TypeError):
-                                animal[key] = None # Set to None if conversion fails
+            # Tarih alanlarını datetime objesine çevirme sorumluluğu data_processor.py'ye taşındı.
             return data
 
     except FileNotFoundError:

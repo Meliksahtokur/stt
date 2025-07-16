@@ -29,10 +29,23 @@
                 orientation: 'vertical'
                 spacing: dp(10)
                 padding: dp(10)
-        MDFloatingActionButton:
-            icon: "plus"
-            pos_hint: {"center_x": 0.5, "center_y": 0.1}
-            on_press: app.root.current = 'add_animal' # Navigate to add_animal screen
+        MDBoxLayout:
+            orientation: 'horizontal'
+            adaptive_height: True
+            pos_hint: {"center_x": 0.5, "y": 0}
+            spacing: "10dp"
+            padding: "10dp"
+            size_hint_x: 0.9
+
+            MDFloatingActionButton:
+                icon: "plus"
+                on_release: app.root.current = 'add_animal' # Navigate to add_animal screen
+                pos_hint: {"center_x": 0.5}
+            
+            MDFloatingActionButton:
+                icon: "upload" # Icon for file upload/web scraping
+                on_release: app.root.current = 'file_upload' # Navigate to file_upload screen
+                pos_hint: {"center_x": 0.5}
 
 <AnimalItem@OneLineAvatarIconListItem>:
     on_release: app.root.current = 'animal_details'; app.root.get_screen('animal_details').set_animal_data(root.data)

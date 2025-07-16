@@ -10,12 +10,14 @@ class AddAnimalScreen(MDScreen):
     devlet_kupesi_field = ObjectProperty(None)
     tasma_no_field = ObjectProperty(None)
     irk_field = ObjectProperty(None)
+    dogum_tarihi_field = ObjectProperty(None) # New ObjectProperty for birth date
 
     def save_animal(self):
         isletme_kupesi = self.isletme_kupesi_field.text
         devlet_kupesi = self.devlet_kupesi_field.text
         tasma_no = self.tasma_no_field.text
         irk = self.irk_field.text
+        dogum_tarihi = self.dogum_tarihi_field.text # Get birth date text
 
         if not isletme_kupesi:
             show_error("İşletme küpesi alanı boş bırakılamaz.")
@@ -27,6 +29,7 @@ class AddAnimalScreen(MDScreen):
             'devlet_kupesi': devlet_kupesi,
             'tasma_no': tasma_no,
             'irk': irk,
+            'dogum_tarihi': dogum_tarihi if dogum_tarihi else None, # Add birth date
             'tohumlamalar': []
         }
 
@@ -51,4 +54,5 @@ class AddAnimalScreen(MDScreen):
         self.devlet_kupesi_field.text = ""
         self.tasma_no_field.text = ""
         self.irk_field.text = ""
+        self.dogum_tarihi_field.text = "" # Reset birth date field
 

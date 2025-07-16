@@ -1,0 +1,68 @@
+<FileUploadScreen>:
+    name: 'file_upload'
+    MDBoxLayout:
+        orientation: 'vertical'
+        MDTopAppBar:
+            title: "Veri Yükle / Web Kazı"
+            left_action_items: [["arrow-left", lambda x: app.root.current = 'home']]
+        ScrollView:
+            MDBoxLayout:
+                orientation: 'vertical'
+                size_hint_y: None
+                height: self.minimum_height
+                padding: "20dp"
+                spacing: "20dp"
+
+                MDLabel:
+                    text: "Yerel Dosyadan Yükle"
+                    font_style: "H6"
+                    halign: "center"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+
+                MDTextField:
+                    id: file_path_input
+                    hint_text: "Yüklenecek Dosya Yolu"
+                    helper_text: "CSV veya Excel dosyası"
+                    helper_text_mode: "on_focus"
+                    mode: "rectangle"
+                    readonly: True # User selects, not types
+                
+                MDRaisedButton:
+                    text: "Dosya Seç"
+                    on_release: root.select_local_file()
+                    pos_hint: {"center_x": 0.5}
+
+                MDSeparator:
+                    height: "2dp"
+                    color: app.theme_cls.primary_color
+                    padding_y: "10dp"
+
+                MDLabel:
+                    text: "Web Sayfasından Kazı"
+                    font_style: "H6"
+                    halign: "center"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+
+                MDTextField:
+                    id: web_url_input
+                    hint_text: "Web Sitesi URL'si"
+                    helper_text: "HTML tablo içeren bir URL girin"
+                    helper_text_mode: "on_focus"
+                    mode: "rectangle"
+                
+                MDRaisedButton:
+                    text: "Verileri Yükle / Kazı"
+                    on_release: root.process_data_input()
+                    pos_hint: {"center_x": 0.5}
+
+                MDLabel:
+                    id: status_label
+                    text: ""
+                    halign: "center"
+                    size_hint_y: None
+                    height: self.texture_size[1]
+                    font_style: "Body1"
+                    theme_text_color: "Primary"
+                    padding_y: "10dp"

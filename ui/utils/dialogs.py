@@ -1,25 +1,18 @@
-from kivymd.uix.dialog import MDDialog
-from kivymd.uix.button import MDFlatButton
+from kivymd.uix.snackbar import Snackbar
 
-_dialog = None
-
-def _get_dialog():
-    global _dialog
-    if not _dialog:
-        _dialog = MDDialog(
-            buttons=[MDFlatButton(text="OK", on_release=lambda x: _dialog.dismiss())],
-        )
-    return _dialog
-
-def show_dialog(title, text):
-    """A generic dialog display function."""
-    dialog = _get_dialog()
-    dialog.title = title
-    dialog.text = text
-    dialog.open()
+def show_snackbar(text: str, duration: float = 2.5, bg_color=None, text_color=None):
+    """A generic snackbar display function."""
+    snackbar = Snackbar(text=text, duration=duration)
+    if bg_color:
+        snackbar.md_bg_color = bg_color
+    if text_color:
+        snackbar.text_color = text_color
+    snackbar.open()
 
 def show_error(text: str):
-    show_dialog(title="Error", text=str(text))
+    # Using red for error
+    show_snackbar(text=str(text), bg_color=(0.8, 0.2, 0.2, 1), text_color=(1, 1, 1, 1))
 
 def show_success(text: str):
-    show_dialog(title="Success", text=str(text))
+    # Using green for success
+    show_snackbar(text=str(text), bg_color=(0.2, 0.8, 0.2, 1), text_color=(1, 1, 1, 1))

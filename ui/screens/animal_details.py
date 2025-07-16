@@ -34,9 +34,26 @@ class AnimalDetailsScreen(MDScreen):
                 self.ids.animal_details_list.add_widget(OneLineListItem(text=f"Tohumlama Tarihi: {insemination.get('tohumlama_tarihi', 'N/A')}"))
 
     def create_editable_item(self, key, value):
-        layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40)
-        label = Label(text=f"{key}:", size_hint_x=0.3)
-        text_input = MDTextField(text=str(value), size_hint_x=0.7)
+        from kivymd.app import MDApp # Import MDApp locally for open_date_picker
+        app = MDApp.get_running_app()
+
+        layout = BoxLayout(orientation='horizontal', size_hint_y=None, height="40dp", padding="5dp")
+        label = Label(text=f"{key}:", size_hint_x=0.4, halign="left", valign="middle")
+        label.bind(size=label.setter('text_size')) # Ensure text wraps if needed
+
+        text_input = MDTextField(
+            text=str(value),
+            size_hint_x=0.6,
+            mode="rectangle"
+        )
+
+        # Apply date picker for specific date fields
+        if key in ['dogum_tarihi', 'son_tohumlama']: # Add other date fields as needed
+            text_input.bind(focus=lambda instance, focus: app.open_date_picker(instance) if focus else None)
+        
+        # Assign a unique ID to each text_input for retrieval
+        text_input.id = f"editable_field_{key}" 
+        
         layout.add_widget(label)
         layout.add_widget(text_input)
         return layout
@@ -55,17 +72,16 @@ class AnimalDetailsScreen(MDScreen):
 
         if self.edit_mode:
             updated_animal = self.animal_data.copy()
-            for i in range(0, self.ids.animal_details_list.children.__len__()):
-                if isinstance(self.ids.animal_details_list.children[i], BoxLayout):
-                    # Ensure child widgets exist and are accessible
-                    if len(self.ids.animal_details_list.children[i].children) >= 2:
-                        key_label = self.ids.animal_details_list.children[i].children[0]
-                        value_input = self.ids.animal_details_list.children[i].children[1]
-
-                        # Extract key from label (e.g., "key:")
-                        key = key_label.text.replace(":", "").strip()
-                        value = value_input.text
-                        updated_animal[key] = value
+            for child in self.ids.animal_details_list.children:
+                if isinstance(child, BoxLayout):
+                    # Find the MDTextField within the BoxLayout
+                    for grand_child in child.children:
+                        if isinstance(grand_child, MDTextField):
+                            # Extract key from its ID (e.g., "editable_field_dogum_tarihi")
+                            key = grand_child.id.replace("editable_field_", "")
+                            value = grand_child.text
+                            updated_animal[key] = value
+                            break # Found the text field, move to next BoxLayout
             try:
                 # Use the app's sync_manager
                 if app.sync_manager:
@@ -73,7 +89,10 @@ class AnimalDetailsScreen(MDScreen):
                     show_success("Değişiklikler kaydedildi.")
                     self.edit_mode = False
                     self.ids.edit_button.text = "Düzenle"
-                    self.populate_list()
+                    # Refresh animal data and repopulate list to reflect changes
+                    # This implies re-fetching from local/synced data
+                    await app.root.get_screen('home')._load_animal_data() # Reload all animals
+                    self.set_animal_data(next((a for a in app.root.get_screen('home')._all_animals if a.get('uuid') == self.animal_uuid), updated_animal))
                 else:
                     show_error("Sync manager not initialized. Please log in.")
             except Exception as e:

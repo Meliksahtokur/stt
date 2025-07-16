@@ -24,34 +24,48 @@ def process_animal_records(all_animals_from_db: List[Dict[str, Any]]) -> List[Di
     processed_list = []
     for animal in all_animals_from_db:
         try:
+            # Convert insemination dates from string to datetime
             inseminations = animal.get('tohumlamalar', [])
-            insemination_dates = [datetime.fromisoformat(i['tohumlama_tarihi']) for i in inseminations if
-                                  i.get('tohumlama_tarihi')]
+            processed_inseminations = []
+            insemination_dates_dt = []
+            for i in inseminations:
+                if 'tohumlama_tarihi' in i and isinstance(i['tohumlama_tarihi'], str):
+                    try:
+                        insem_dt = datetime.fromisoformat(i['tohumlama_tarihi'])
+                        processed_inseminations.append({**i, 'tohumlama_tarihi': insem_dt})
+                        insemination_dates_dt.append(insem_dt)
+                    except ValueError:
+                        processed_inseminations.append(i) # Keep as string if parsing fails
+                else:
+                    processed_inseminations.append(i) # Keep as is if not string or not present
+            animal['tohumlamalar'] = processed_inseminations # Update with processed dates
 
-            animal['sinif'] = classify_animal(insemination_dates)
+            animal['sinif'] = classify_animal(insemination_dates_dt)
             animal['display_name'] = get_display_name(animal)
 
             # Convert 'dogum_tarihi' if it exists and is a string
             dogum_tarihi_str = animal.get('dogum_tarihi')
             if isinstance(dogum_tarihi_str, str):
                 try:
-                    # Assuming ISO format from DB/persistence
                     animal['dogum_tarihi'] = datetime.fromisoformat(dogum_tarihi_str)
                 except ValueError:
-                    # If not ISO format, keep it as string or set to None
                     animal['dogum_tarihi'] = None # Set to None if conversion fails
+            # Ensure it's None if it's not a valid string or doesn't exist
+            elif not isinstance(dogum_tarihi_str, datetime):
+                 animal['dogum_tarihi'] = None
 
-            if insemination_dates:
-                # Find the latest insemination dictionary, then get its date as datetime object
-                latest_insemination_dict = sorted(inseminations, key=lambda x: datetime.fromisoformat(x['tohumlama_tarihi']), reverse=True)[0]
-                animal['son_tohumlama'] = datetime.fromisoformat(latest_insemination_dict['tohumlama_tarihi'])
+            if insemination_dates_dt:
+                # Find the latest insemination datetime object
+                animal['son_tohumlama'] = max(insemination_dates_dt)
             else:
                 animal['son_tohumlama'] = None
 
             processed_list.append(animal)
-        except (KeyError, ValueError, TypeError) as e:
+        except (KeyError, ValueError, TypeError, AttributeError) as e: # Added AttributeError for safe date operations
             logging.error(f"Error processing animal record: {animal}, Error: {e}")
-            # Handle the error appropriately, e.g., skip the record or log it.
+            # Decide how to handle invalid records (skip, return partial, etc.)
+            # For now, we'll continue, but the malformed record might cause downstream issues.
+            # A more robust solution would be to return a list of valid records + errors.
 
     return processed_list
 

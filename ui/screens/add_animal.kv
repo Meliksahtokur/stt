@@ -18,6 +18,12 @@
         MDTextField:
             id: irk_field
             hint_text: "Irk"
+        MDTextField:
+            id: dogum_tarihi_field
+            hint_text: "Doğum Tarihi (YYYY-MM-DD)"
+            mode: "rectangle"
+            on_focus: if self.focus: app.open_date_picker(self) # Call date picker on focus
+
         MDRaisedButton:
             text: "Kaydet"
             on_press: root.save_animal()

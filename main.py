@@ -14,6 +14,7 @@ from ui.screens.home_screen import HomeScreen
 from ui.screens.animal_details import AnimalDetailsScreen
 from ui.screens.add_animal import AddAnimalScreen
 from ui.screens.statistics_screen import StatisticsScreen
+from ui.screens.file_upload_screen import FileUploadScreen # NEW IMPORT
 
 class WindowManager(ScreenManager):
     pass
@@ -31,7 +32,7 @@ class AnimalTrackerApp(MDApp):
         # Initialize AuthManager with callbacks for success/error
         self.auth_manager = AuthManager(
             on_success=self.post_login_setup,
-            on_error=show_error # Use centralized dialog utility
+            on_error=self.handle_auth_error # Use a method to access show_error
         )
 
         # Load KV files for all screens
@@ -39,7 +40,8 @@ class AnimalTrackerApp(MDApp):
         Builder.load_file('ui/screens/animal_details.kv')
         Builder.load_file('ui/screens/add_animal.kv')
         Builder.load_file('ui/screens/statistics_screen.kv')
-        Builder.load_file('ui/screens/login_screen.kv') # Load the new login screen KV
+        Builder.load_file('ui/screens/login_screen.kv')
+        Builder.load_file('ui/screens/file_upload_screen.kv') # NEW KV LOAD
 
         sm = WindowManager()
         sm.add_widget(LoginScreen(name='login'))
@@ -47,6 +49,7 @@ class AnimalTrackerApp(MDApp):
         sm.add_widget(AnimalDetailsScreen(name='animal_details'))
         sm.add_widget(AddAnimalScreen(name='add_animal'))
         sm.add_widget(StatisticsScreen(name='statistics'))
+        sm.add_widget(FileUploadScreen(name='file_upload')) # NEW SCREEN ADD
 
         return sm
 
