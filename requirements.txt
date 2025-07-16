@@ -11,3 +11,4 @@ plyer
 openpyxl
 python-dotenv
 android_permissions
+certifi
