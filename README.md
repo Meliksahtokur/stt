@@ -13,19 +13,31 @@ Bu proje, büyükbaş hayvanların takibini, yönetimini ve gebelik süreçlerin
 
 ## Kurulum
 
-1.  **Projeyi Klonlayın veya Dosyaları Oluşturun:**
-    Bu projenin tamamını otomatik olarak kurmak için, bu README dosyasının bulunduğu ana dizinde aşağıdaki tek komutu çalıştırabilirsiniz:
+Bu proje özellikle ARM64 mimarisi için GitHub Actions (CI/CD) üzerinde derlenmek üzere tasarlanmıştır. Lokal geliştirme ortamınızı kurmak ve bağımlılıkları yönetmek için aşağıdaki adımları izleyebilirsiniz:
+
+1.  **Projeyi Klonlayın:**
+    Proje GitHub üzerinde barındırıldığından, öncelikle depoyu klonlayarak başlayın:
+    ```bash
+    git clone https://github.com/Meliksahtokur/stt.git
+    cd stt # veya projenizin ana dizini
+    ```
+
+2.  **Lokal Geliştirme Ortamını Kurun (Opsiyonel):**
+    Eğer lokalde geliştirme veya test yapmak isterseniz, Python bağımlılıklarını kurmak için aşağıdaki adımları izleyin. (Bu adım, ARM64 için GitHub Actions derlemesini etkilemez.)
+
+    a) **Otomatik Kurulum (Önerilen):**
+    Ana dizinde (bu README dosyasının bulunduğu yer) aşağıdaki tek komutu çalıştırabilirsiniz:
     ```bash
     bash setup.sh
     ```
-    Bu komut, tüm klasörleri ve dosyaları oluşturacak, içlerini dolduracak ve Python bağımlılıklarını yükleyecektir.
+    Bu komut, gerekli klasörleri oluşturacak, Python sanal ortamını hazırlayacak ve tüm bağımlılıkları yükleyecektir.
 
-2.  **Bağımlılıkları Manuel Yükleme (Eğer setup.sh kullanmazsanız):**
-    Proje ana dizininde terminali açın ve aşağıdaki komutu çalıştırın:
+    b) **Manuel Bağımlılık Yükleme:**
+    Eğer `setup.sh` kullanmazsanız veya bir sorun yaşarsanız, proje ana dizininde bir sanal ortam oluşturup (örn: `python3 -m venv myenv`) aktifleştirdikten sonra aşağıdaki komutu çalıştırın:
     ```bash
     pip install -r requirements.txt
     ```
-    Android/iOS için derleme yapacaksanız, `buildozer`'ı da kurmanız ve yapılandırmanız gerekebilir.
+    Android/iOS için **GitHub Actions dışında** derleme yapacaksanız, `buildozer`'ı da kurmanız ve yapılandırmanız gerekebilir. Ancak projenin birincil derleme yöntemi GitHub Actions üzerindendir.
 
 ## Kullanım
 
