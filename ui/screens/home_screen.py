@@ -11,7 +11,7 @@ from kivy.properties import ObjectProperty, BooleanProperty, StringProperty
 from kivy.uix.recycleview.layout import LayoutSelectionBehavior
 from kivymd.uix.list import OneLineAvatarIconListItem # Changed to OneLineAvatarIconListItem for consistency
 from kivy.clock import Clock
-from src.main import get_all_animal_data
+from src.data_service import get_all_animal_data
 from src.data_processor import get_display_name
 from ui.utils.dialogs import show_error, show_success # Import centralized dialogs
 

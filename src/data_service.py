@@ -1,8 +1,9 @@
+
 import asyncio
 from src.sync_manager import SyncManager
-from src.data_processor import process_animal_records, get_display_name # Import get_display_name
-from src.persistence import load_animals # Import load_animals for offline-first
-from kivymd.app import MDApp # Import MDApp to get sync_manager from app instance
+from src.data_processor import process_animal_records, get_display_name
+from src.persistence import load_animals
+from kivymd.app import MDApp
 
 async def get_all_animal_data():
     """
@@ -10,14 +11,12 @@ async def get_all_animal_data():
     then triggering background synchronization.
     """
     app = MDApp.get_running_app()
-    
+
     # 1. First, try to load from local cache for immediate UI responsiveness
     local_data = load_animals()
     if local_data:
         processed_local_data = process_animal_records(local_data)
         print("Hayvan verileri lokal önbellekten yüklendi.")
-        # We also need to populate _all_animals if this is the first load
-        # This will be handled by HomeScreen.populate_list directly now.
     else:
         processed_local_data = []
         print("Lokal hayvan verisi bulunamadı.")
