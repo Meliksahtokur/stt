@@ -11,7 +11,7 @@ version = 1.0.0
 # version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
-requirements = python3,kivy==2.3.0,plyer,android_permissions
+requirements = python3,kivy,kivymd,supabase-py,pandas,numpy,matplotlib,requests,beautifulsoup4,tabulate,plyer,openpyxl,python-dotenv,android_permissions
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
@@ -59,7 +59,7 @@ p4a.branch = master
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.kivy.android.PythonActivity
-#android.force_build_entrypoint = ui.app
+android.force_build_entrypoint = main.py
 
 # (str) Full name including package path of the Java class that implements Android Activity
 # use that parameter together with android.entrypoint to set custom Java class instead of PythonActivity
