@@ -8,4 +8,12 @@
         ScrollView:
             MDList:
                 id: animal_details_list
+        MDRaisedButton:
+            id: edit_button
+            text: "Düzenle"
+            on_release: root.toggle_edit_mode() # Call toggle_edit_mode
+            pos_hint: {"center_x": 0.5}
+            size_hint_y: None
+            height: "40dp"
+            padding_y: "10dp"
 
