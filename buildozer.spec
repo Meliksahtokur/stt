@@ -48,7 +48,7 @@ osx.kivy_version = 2.3.0
 #
 
 fullscreen = 0
-android.permissions = RECORD_AUDIO, INTERNET
+android.permissions = INTERNET, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE # Added storage permissions for filechooser
 android.api = 33
 android.minapi = 24
 android.ndk = 25b

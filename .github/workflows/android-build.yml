@@ -1,0 +1,75 @@
+name: Build Android APK (ARM64)
+
+on:
+  push:
+    branches:
+      - arm64
+  pull_request:
+    branches:
+      - arm64
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repo klonla
+        uses: actions/checkout@v4
+
+      - name: Sistem bağımlılıklarını yükle
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-pip \
+            python3-venv \
+            openjdk-17-jdk \
+            unzip \
+            wget \
+            libffi-dev \
+            libssl-dev \
+            build-essential \
+            git \
+            zip \
+            libpng-dev \
+            libjpeg-dev \
+            zlib1g-dev
+
+      - name: Python sanal ortam oluştur
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip setuptools wheel
+
+      - name: Buildozer kur
+        run: |
+          source venv/bin/activate
+          pip install cython
+          pip install buildozer==1.5.0
+          buildozer --version
+
+      - name: buildozer.spec dosyasını güncelle (giriş noktası)
+        run: |
+          # Ana giriş noktasının doğru olduğundan emin ol
+          sed -i 's/android.force_build_entrypoint = ui.app/android.force_build_entrypoint = main.py/g' buildozer.spec
+          # İzinleri güncelle: RECORD_AUDIO'yu kaldır, WRITE_EXTERNAL_STORAGE ve READ_EXTERNAL_STORAGE'ı ekle
+          sed -i 's/android.permissions = RECORD_AUDIO, INTERNET/android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE/g' buildozer.spec
+
+
+      - name: APK derleme
+        run: |
+          source venv/bin/activate
+          buildozer -v android debug
+
+      - name: Cache .buildozer dizini
+        uses: actions/cache@v3
+        with:
+          path: .buildozer
+          key: buildozer-${{ github.sha }}
+          restore-keys: |
+            buildozer-
+
+      - name: Derlenen APK'yı yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: bin/*.apk
