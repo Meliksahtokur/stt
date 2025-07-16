@@ -55,4 +55,5 @@ class AddAnimalScreen(MDScreen):
         self.tasma_no_field.text = ""
         self.irk_field.text = ""
         self.dogum_tarihi_field.text = "" # Reset birth date field
+        self.dogum_tarihi_field.text = "" # Reset birth date field
 

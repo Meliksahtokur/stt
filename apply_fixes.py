@@ -133,7 +133,6 @@ if __name__ == "__main__":
 
     # 3. requirements.txt güncelleme
     requirements_path = os.path.join(project_root, 'requirements.txt')
-    # Removed 'buildozer' as it's a build tool, not an app dependency.
     new_requirements = ["plyer", "pandas", "numpy", "matplotlib", "requests", "beautifulsoup4", "tabulate", "openpyxl", "python-dotenv", "kivy", "kivymd", "supabase-py"]
     update_requirements_txt(requirements_path, new_requirements)
 
@@ -147,20 +146,25 @@ if __name__ == "__main__":
 
     # 5. buildozer.spec güncelleme - Ensure this matches the most up-to-date version
     buildozer_spec_path = os.path.join(project_root, 'buildozer.spec')
+    # Updated content for buildozer.spec reflecting current state and previous changes
     buildozer_spec_content = """[app]
-title = Hayvan Takip Sistemi
-package.name = animaltracker
-package.domain = org.example
+title = STT
+package.name = stt
+package.domain = com.meliksahtokur
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,json,db
-android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,VIBRATE
-
-# (list) Application versioning (method 1)
+source.include_exts = py,png,jpg,kv,atlas,txt,json
 version = 1.0.0
 
+# (str) Application versioning (method 2)
+# version.regex = __version__ = ['"](.*)['"]
+# version.filename = %(source.dir)s/main.py
+
 # (list) Application requirements
-# comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,kivymd,supabase-py,pandas,numpy,matplotlib,requests,beautifulsoup4,tabulate,plyer,openpyxl,python-dotenv
+requirements = python3,kivy,kivymd,supabase-py,pandas,numpy,matplotlib,requests,beautifulsoup4,tabulate,plyer,openpyxl,python-dotenv,android_permissions
+
+# (str) Custom source folders for requirements
+# Sets custom source for any requirements with recipes
+# requirements.source.kivy = ../../kivy
 
 # (str) Presplash of the application
 #presplash.filename = %(source.dir)s/data/presplash.png
@@ -186,89 +190,25 @@ orientation = portrait
 osx.python_version = 3
 
 # Kivy version to use
-osx.kivy_version = 1.9.1
+osx.kivy_version = 2.3.0
 
 #
 # Android specific
 #
 
-# (bool) Indicate if the application should be fullscreen or not
 fullscreen = 0
-
-# (string) Presplash background color (for android toolchain)
-# Supported formats are: #RRGGBB #AARRGGBB or one of the following names:
-# red, blue, green, black, white, gray, cyan, magenta, yellow, lightgray,
-# darkgray, grey, lightgrey, darkgrey, aqua, fuchsia, lime, maroon, navy,
-# olive, purple, silver, teal.
-#android.presplash_color = #FFFFFF
-
-# (string) Presplash animation using Lottie format.
-# see https://lottiefiles.com/ for examples and https://airbnb.design/lottie/
-# for general documentation.
-# Lottie files can be created using various tools, like Adobe After Effect or Synfig.
-#android.presplash_lottie = "path/to/lottie/file.json"
-
-# (str) Adaptive icon of the application (used if Android API level is 26+ at runtime)
-#icon.adaptive_foreground.filename = %(source.dir)s/data/icon_fg.png
-#icon.adaptive_background.filename = %(source.dir)s/data/icon_bg.png
-
-# (list) Permissions
-# (See https://python-for-android.readthedocs.io/en/latest/buildoptions/#build-options-1 for all the supported syntaxes and properties)
-#android.permissions = android.permission.INTERNET, (name=android.permission.WRITE_EXTERNAL_STORAGE;maxSdkVersion=18)
-
-# (list) features (adds uses-feature -tags to manifest)
-#android.features = android.hardware.usb.host
-
-# (str) Android build tools version.
-android.build_tools_version = 34.0.0
-
-# (int) Target Android API, should be as high as possible.
+android.permissions = RECORD_AUDIO, INTERNET, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE # Added storage permissions for filechooser
 android.api = 33
-
-# (int) Minimum API your APK / AAB will support.
-android.minapi = 21
-
-# (int) Android SDK version to use
-android.sdk = 33
-
-# (str) Android NDK version to use
+android.minapi = 24
 android.ndk = 25b
-
-# (bool) If True, then automatically accept SDK license
-# agreements. This is intended for automation only. If set to False,
-# the default, you will be shown the license when first running
-# buildozer.
+android.skip_update = False
 android.accept_sdk_license = True
-
-# (int) Android NDK API to use. This is the minimum API your app will support, it should usually match android.minapi.
-android.ndk_api = 21
-
-# (bool) Use --private data storage (True) or --dir public storage (False)
-#android.private_storage = True
-
-# (str) Android NDK directory (if empty, it will be automatically downloaded.)
-#android.ndk_path =
-
-# (str) Android SDK directory (if empty, it will be automatically downloaded.)
-#android.sdk_path =
-
-# (str) ANT directory (if empty, it will be automatically downloaded.)
-#android.ant_path =
-
-# (bool) If True, then skip trying to update the Android sdk
-# This can be useful to avoid excess Internet downloads or save time
-# when an update is due and you just want to test/build your package
-# android.skip_update = False
-
-# (bool) If True, then automatically accept SDK license
-# agreements. This is intended for automation only. If set to False,
-# the default, you will be shown the license when first running
-# buildozer.
-# android.accept_sdk_license = False
+android.logcat_filters = *:S python:D
+p4a.branch = master
 
 # (str) Android entry point, default is ok for Kivy-based app
 #android.entrypoint = org.kivy.android.PythonActivity
-android.force_build_entrypoint = ui.app
+android.force_build_entrypoint = main.py
 
 # (str) Full name including package path of the Java class that implements Android Activity
 # use that parameter together with android.entrypoint to set custom Java class instead of PythonActivity
@@ -410,8 +350,6 @@ android.enable_androidx = True
 # (bool) Copy library instead of making a libpymodules.so
 #android.copy_libs = 1
 
-# (list) The Android archs to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
-# In past, was `android.arch` as we weren't supporting builds for multiple archs at the same time.
 android.archs = arm64-v8a
 
 # (int) overrides automatic versionCode computation (used in build.gradle)
@@ -584,24 +522,6 @@ warn_on_root = 1
 
     print("\n--- Dosya Güncellemeleri Tamamlandı ---\n")
 
-    # Terminal komutları
-    terminal_commands = [
-        "source myenv/bin/activate", # Assuming 'myenv' is your virtual environment name
-        "pip install -r requirements.txt",
-        "buildozer android debug"
-    ]
-
-    print("Şimdi terminal komutları çalıştırılacak. Eğer sanal ortamınızın adı 'venv' değilse veya farklı bir konumdaysa, lütfen 'source venv/bin/activate' komutunu kendiniz düzenleyin.")
-    input("Devam etmek için Enter'a basın...")
-    
-    # Komutları çalıştırmadan önce, sanal ortam aktivasyonunun ayrı bir süreçte çalıştırılması gerektiğini belirtelim.
-    # Bu betik içinden sanal ortamı kalıcı olarak aktifleştirmek zor olduğu için, kullanıcıya rehberlik edeceğiz.
-
-    print("\n--------------------------------------------------------------")
-    print("DİKKAT: Sanal ortamın doğru şekilde aktifleştirilmesi için:")
-    print("1. Bu betiği çalıştırdıktan sonra terminalinizi Kapatmayın.")
-    print("2. 'source venv/bin/activate' komutunu **manuel olarak** terminalde çalıştırın.")
-    print("3. Ardından, 'pip install -r requirements.txt' ve diğer 'buildozer' komutlarını manuel olarak çalıştırın.")
-    print("--------------------------------------------------------------\n")
-    
-    print("\nOtomatik dosya düzenlemeleri tamamlandı. Şimdi lütfen yukarıdaki terminal komutlarını manuel olarak sırasıyla çalıştırın.")
+    # Terminal komutları (Removed local build commands as per user request)
+    # The user builds on GitHub, so no local build commands are suggested here.
+    print("Otomatik dosya düzenlemeleri tamamlandı. Lütfen bu değişiklikleri GitHub'a push ederek CI/CD sürecinizi başlatın.")
