@@ -15,7 +15,6 @@ from ui.screens.animal_details import AnimalDetailsScreen
 from ui.screens.add_animal import AddAnimalScreen
 from ui.screens.statistics_screen import StatisticsScreen
 from ui.screens.file_upload_screen import FileUploadScreen # NEW IMPORT
-from ui.screens.file_upload_screen import FileUploadScreen # NEW IMPORT
 
 class WindowManager(ScreenManager):
     pass
