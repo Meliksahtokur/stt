@@ -3,11 +3,16 @@ from kivymd.uix.screen import MDScreen
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.scrollview import ScrollView # Added for explicit import
 from kivymd.uix.list import OneLineListItem
-from src.statistics import calculate_statistics, get_animal_specific_stats, \
-                           calculate_breed_distribution, generate_pie_chart_base64, \
-                           calculate_births_per_month, generate_bar_chart_base64
-from src.persistence import load_animals
+from src.statistics import (
+    calculate_statistics, # Şimdi API çağrısı
+    generate_pie_chart_base64, # Şimdi API çağrısı
+    generate_bar_chart_base64, # Şimdi API çağrısı
+    get_animal_specific_stats, # Şimdi API çağrısı
+    StatisticsAPIError # Yeni hata sınıfı
+)
+from src.persistence import load_animals # Hala lokal veri için kullanılıyor
 from ui.utils.dialogs import show_error # Import centralized dialogs
+from src.data_processor import process_animal_records # Hayvanları API'ye göndermeden önce işlemek için
 
 class StatisticsScreen(MDScreen):
     statistics_list = ObjectProperty(None)
@@ -24,6 +29,7 @@ class StatisticsScreen(MDScreen):
             # for consistency with offline-first approach, but for now using load_animals
             # as it was previously done and doesn't require complex app/sync_manager access.
             all_animals = load_animals()
+            all_animals = load_animals()
             if not all_animals:
                 show_error("Henüz hiç hayvan verisi yok. Lütfen hayvan ekleyin.")
                 self.populate_general_stats({}) # Clear existing stats
@@ -31,30 +37,50 @@ class StatisticsScreen(MDScreen):
                 self.births_bar_chart_src = ""
                 return
 
-            # General Statistics
-            general_stats = calculate_statistics(all_animals)
+            # Hayvan verilerini API'ye göndermeden önce işlemeliyiz (datetime'ları ISO formatına çevirmek gibi)
+            # Normalde load_animals'tan gelen veri zaten API'ye uygun olmalı veya API tarafında işlenmeli.
+            # Ancak process_animal_records fonksiyonu datetime objelerine çevirdiği için,
+            # API'ye göndermeden önce tekrar string'e çevirmek veya API'de bu dönüşümleri yönetmek gerekir.
+            # src/statistics.py içindeki _call_deta_api zaten datetime objelerini JSON'a çeviriyor.
+            # Bu nedenle doğrudan 'all_animals' gönderebiliriz. Ancak emin olmak için processed formunu kullanmak daha güvenli.
+            processed_animals = process_animal_records(all_animals) # Bu, lokalde zaten yapılıyor
+            
+            # Tüm istatistikleri ve grafik bilgilerini tek API çağrısıyla alalım
+            api_response = await calculate_statistics(processed_animals) # Bu artık tek bir API çağrısı
+
+            if "hata" in api_response:
+                show_error(f"İstatistik API hatası: {api_response['hata']}")
+                self.populate_general_stats({})
+                self.breed_pie_chart_src = ""
+                self.births_bar_chart_src = ""
+                return
+
+            general_stats = api_response.get("statistics", {})
             self.populate_general_stats(general_stats)
 
-            # Breed Distribution Chart
-            breed_dist = calculate_breed_distribution(all_animals)
-            pie_chart_base64 = generate_pie_chart_base64(breed_dist, "Hayvan Irk Dağılımı")
+            # Grafik kaynaklarını API yanıtından doğrudan al
+            pie_chart_base64 = api_response.get("pie_chart_base64")
             if pie_chart_base64:
                 self.breed_pie_chart_src = f"data:image/png;base64,{pie_chart_base64}"
             else:
-                self.breed_pie_chart_src = "" # Clear if no data
+                self.breed_pie_chart_src = ""
 
-            # Births per Month Chart
-            births_data = calculate_births_per_month(all_animals)
-            bar_chart_base64 = generate_bar_chart_base64(births_data, "Aylara Göre Doğum Sayısı", "Ay-Yıl", "Doğum Sayısı")
+            bar_chart_base64 = api_response.get("bar_chart_base64")
             if bar_chart_base64:
                 self.births_bar_chart_src = f"data:image/png;base64,{bar_chart_base64}"
             else:
-                self.births_bar_chart_src = "" # Clear if no data
+                self.births_bar_chart_src = ""
 
+        except StatisticsAPIError as e:
+            print(f"İstatistik API hatası (ekran): {e}")
+            show_error(f"İstatistikler yüklenirken API hatası: {e}")
+            self.populate_general_stats({})
+            self.breed_pie_chart_src = ""
+            self.births_bar_chart_src = ""
         except Exception as e:
-            print(f"İstatistikler yüklenirken hata oluştu: {e}")
-            show_error(f"İstatistikler yüklenirken bir hata oluştu: {e}")
-            self.populate_general_stats({}) # Clear existing stats on error
+            print(f"İstatistikler yüklenirken beklenmedik hata (ekran): {e}")
+            show_error(f"İstatistikler yüklenirken beklenmedik bir hata oluştu: {e}")
+            self.populate_general_stats({})
             self.breed_pie_chart_src = ""
             self.births_bar_chart_src = ""
 
