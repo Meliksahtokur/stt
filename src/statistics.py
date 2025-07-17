@@ -1,6 +1,7 @@
 # src/statistics.py
 import requests
 import json
+from datetime import datetime # Import datetime
 from typing import List, Dict, Any, Optional
 import os
 from config.secrets import DETA_API_BASE_URL, DETA_API_KEY # Yeni Deta API bilgileri
