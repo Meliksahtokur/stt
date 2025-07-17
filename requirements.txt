@@ -1,11 +1,11 @@
 kivy
 kivymd
 supabase-py
-requests # API çağrıları için
-beautifulsoup4 # web scraping için
-tabulate # display.py için
-plyer # dosya seçici için
-openpyxl # excel okuma için
+requests
+beautifulsoup4
+tabulate
+plyer
+openpyxl
 python-dotenv
 android_permissions
-certifi # requests için SSL sertifikası
+certifi

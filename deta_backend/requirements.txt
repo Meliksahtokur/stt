@@ -1,6 +1,9 @@
 fastapi
 uvicorn
 supabase-py
+fastapi
+uvicorn
+supabase-py
 numpy
 pandas
 matplotlib
