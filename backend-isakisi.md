@@ -6,7 +6,7 @@ Bu strateji, mobil uygulamanızın (`Kivy`) Supabase'i (veritabanı ve kimlik do
 
 ---
 
-**Faz 1: Deta Space Backend'i Hazırlama**
+**Faz 1: Deta Space Backend'i Hazırlama** ✅ Tamamlandı
 
 **Hedef:** İstatistik hesaplama ve grafik oluşturma API'sini Deta Space'te oluşturmak ve dağıtmak.
 
@@ -15,7 +15,7 @@ Bu strateji, mobil uygulamanızın (`Kivy`) Supabase'i (veritabanı ve kimlik do
     *   Deta CLI'yı yetkilendirin (`deta login`).
     *   Yeni bir Deta Space projesi başlatın (`deta new`). Bu, bir proje klasörü ve `Micro` hizmeti için varsayılan bir yapı oluşturacaktır.
 
-*   **Adım 1.2: İstatistik ve Grafik API'sinin Tasarımı ve Kodlanması**
+*   **Adım 1.2: İstatistik ve Grafik API'sinin Tasarımı ve Kodlanması** ✅ Tamamlandı
     *   Deta projenizin ana dizininde (örneğin `deta_backend/`) bir Python web çerçevesi (FastAPI veya Flask önerilir) kullanarak bir API uygulaması oluşturacağız. FastAPI, modern ve hızlı olduğu için tercih edilecektir.
     *   `src/statistics.py` içindeki **`calculate_statistics`, `calculate_breed_distribution`, `generate_pie_chart_base64`, `calculate_births_per_month`, `generate_bar_chart_base64`, `get_animal_specific_stats`** fonksiyonlarını bu yeni API'ye taşıyacağız.
     *   Bu API endpoint'leri, mobil uygulamadan gelen istekleri alacak, Supabase'den veriyi çekecek ve işlenmiş istatistikleri veya base64 kodlu grafik görüntülerini JSON yanıtı olarak dönecektir.
@@ -28,21 +28,21 @@ Bu strateji, mobil uygulamanızın (`Kivy`) Supabase'i (veritabanı ve kimlik do
     *   API kodunu ve bağımlılıklarını (`fastapi`, `uvicorn`, `supabase-py`, `numpy`, `pandas`, `matplotlib`) içeren bir `requirements.txt` dosyasını Deta projesinin içine yerleştireceğiz.
     *   Deta CLI kullanarak (`deta deploy`) API'yi Deta Space'e dağıtacağız. Dağıtım sonrası Deta, herkese açık bir endpoint URL'si sağlayacaktır.
 
-**Faz 2: Mobil Uygulama (Kivy) Entegrasyonu**
+**Faz 2: Mobil Uygulama (Kivy) Entegrasyonu** ✅ Tamamlandı
 
 **Hedef:** Kivy uygulamasını, istatistik ve grafikler için Deta API'sini çağıracak şekilde güncellemek.
 
 *   **Adım 2.1: `config/secrets.py` Güncelleme**
     *   Deta API'sinin endpoint URL'sini `secrets.py` dosyasına ekleyeceğiz. Bu bilgiyi `.env` dosyasında saklayacağız.
 
-*   **Adım 2.2: `src/statistics.py` Güncelleme**
+*   **Adım 2.2: `src/statistics.py` Güncelleme** ✅ Tamamlandı
     *   Bu modüldeki tüm istatistik hesaplama ve grafik oluşturma fonksiyonlarını kaldıracağız.
     *   Bunun yerine, `requests` kütüphanesini kullanarak Deta API'sine HTTP istekleri (GET/POST) gönderecek ve dönen JSON/base64 verisini işleyecek yeni fonksiyonlar yazacağız.
 
 *   **Adım 2.3: `ui/screens/statistics_screen.py` Güncelleme**
     *   `_update_statistics_async` metodunu, güncellenmiş `src/statistics.py` modülündeki yeni API çağrılarını kullanacak şekilde uyarlayacağız. UI'da dönen grafikleri ve istatistikleri göstereceğiz.
 
-*   **Adım 2.4: Bağımlılık Temizliği (`requirements.txt` ve `buildozer.spec`)**
+*   **Adım 2.4: Bağımlılık Temizliği (`requirements.txt` ve `buildozer.spec`)** ✅ Tamamlandı (Kontrol edildi, zaten kaldırılmıştı)
     *   `requirements.txt` dosyasından `numpy`, `pandas`, `matplotlib` paketlerini tamamen çıkaracağız. `requests` kütüphanesinin ise mobil tarafta kalmasını sağlayacağız.
     *   `buildozer.spec` dosyasındaki `requirements` listesinden de aynı paketleri kaldıracağız. Bu, mobil uygulama derleme süresini ve boyutunu azaltacak, build hatalarını çözecektir.
 

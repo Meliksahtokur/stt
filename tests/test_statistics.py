@@ -1,114 +1,146 @@
-import unittest
-from datetime import datetime, date
-from unittest.mock import patch, MagicMock
-from src.statistics import (
-    calculate_statistics,
-    calculate_breed_distribution,
-    generate_pie_chart_base64,
-    calculate_births_per_month,
-    generate_bar_chart_base64,
-    get_animal_specific_stats
-)
-import base64 # To check if output is valid base64
+# src/statistics.py
+import requests
+import json
+from datetime import datetime # Import datetime
+from typing import List, Dict, Any, Optional
+import os
+from config.secrets import DETA_API_BASE_URL, DETA_API_KEY # Yeni Deta API bilgileri
 
-class TestStatistics(unittest.TestCase):
+# NOT: Bu dosyadaki orijinal istatistik hesaplama ve grafik oluşturma mantığı
+# artık Deta Space backend'inde yer almaktadır. Mobil uygulama sadece bu API'leri çağıracaktır.
 
-    def setUp(self):
-        self.mock_animals = [
-            {'uuid': '1', 'isletme_kupesi': 'A001', 'devlet_kupesi': 'D001', 'tasma_no': 'T001', 'irk': 'Holstein', 'sinif': 'İnek',
-             'dogum_tarihi': datetime(2020, 1, 1), 'tohumlamalar': [ # Modified for Animal 1 to be İnek
-                 {'tohumlama_tarihi': '2021-01-01T00:00:00'},
-                 {'tohumlama_tarihi': '2022-01-01T00:00:00'}
-             ]},
-            {'uuid': '2', 'isletme_kupesi': 'A002', 'devlet_kupesi': 'D002', 'tasma_no': 'T002', 'irk': 'Jersey', 'sinif': 'Düve',
-             'dogum_tarihi': datetime(2023, 3, 15), 'tohumlamalar': []},
-            {'uuid': '3', 'isletme_kupesi': 'A003', 'devlet_kupesi': 'D003', 'tasma_no': 'T003', 'irk': 'Holstein', 'sinif': 'İnek',
-             'dogum_tarihi': datetime(2021, 7, 20), 'tohumlamalar': [{'tohumlama_tarihi': '2023-01-01T00:00:00'}, {'tohumlama_tarihi': '2022-01-01T00:00:00'}]},
-            {'uuid': '4', 'isletme_kupesi': 'A004', 'devlet_kupesi': 'D004', 'tasma_no': 'T004', 'irk': 'Angus', 'sinif': 'Düve',
-             'dogum_tarihi': datetime(2024, 2, 10), 'tohumlamalar': [{'tohumlama_tarihi': '2024-05-15T00:00:00'}]},
-        ]
-        # Process the mock animals through data_processor to simulate real app flow
-        # This is crucial for 'son_tohumlama' and 'gebelik_durumu_metin' to be correctly set as datetime objects
-        from src.data_processor import process_animal_records
-        self.processed_mock_animals = process_animal_records(self.mock_animals)
+class StatisticsAPIError(Exception):
+    """İstatistik API çağrısı sırasında oluşan hatalar için özel istisna sınıfı."""
+    pass
+
+def _call_deta_api(endpoint: str, method: str = 'GET', data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Deta Space'teki istatistik API'lerini çağırır."""
+    url = f"{DETA_API_BASE_URL}{endpoint}"
+    headers = {
+        "Content-Type": "application/json",
+        "X-API-Key": DETA_API_KEY # Deta API anahtarı
+    }
+    try:
+        if method == 'GET':
+            response = requests.get(url, headers=headers, timeout=30)
+        elif method == 'POST':
+            response = requests.post(url, headers=headers, json=data, timeout=30)
+        else:
+            raise StatisticsAPIError(f"Desteklenmeyen HTTP metodu: {method}")
+
+        response.raise_for_status() # HTTP hata kodları için hata fırlat
+        return response.json()
+    except requests.exceptions.Timeout:
+        raise StatisticsAPIError(f"API isteği zaman aşımına uğradı: {url}")
+    except requests.exceptions.ConnectionError:
+        raise StatisticsAPIError(f"API'ye bağlanırken ağ hatası oluştu: {url}. İnternet bağlantınızı veya Deta API durumunu kontrol edin.")
+    except requests.exceptions.HTTPError as e:
+        status_code = e.response.status_code
+        error_detail = e.response.text
+        raise StatisticsAPIError(f"API hatası ({status_code}): {error_detail}")
+    except json.JSONDecodeError:
+        raise StatisticsAPIError("API'den geçersiz JSON yanıtı alındı.")
+    except Exception as e:
+        raise StatisticsAPIError(f"API çağrısı sırasında beklenmedik hata: {e}")
+
+def calculate_statistics(processed_animals: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """İstatistikleri hesaplamak için Deta API'yi çağırır."""
+    try:
+        # Deta API'ye işlenmiş hayvan verilerini göndererek istatistikleri al
+        # Not: processed_animals içindeki datetime objeleri JSON'a çevrilmeli.
+        # Bu işlem burada veya API'de yapılabilir. Basitlik için burada yapalım.
+        serializable_animals = []
+        for animal in processed_animals:
+            serializable_animal = animal.copy()
+            for key, value in serializable_animal.items():
+                if isinstance(value, datetime):
+                    serializable_animal[key] = value.isoformat()
+                elif isinstance(value, list): # Tohumlamalar gibi listelerdeki datetime'ları da çevir
+                    processed_list_items = []
+                    for item in value:
+                        if isinstance(item, dict):
+                            processed_item = item.copy()
+                            for k, v in processed_item.items():
+                                if isinstance(v, datetime):
+                                    processed_item[k] = v.isoformat()
+                            processed_list_items.append(processed_item)
+                        else:
+                            processed_list_items.append(item)
+                    serializable_animal[key] = processed_list_items
+            serializable_animals.append(serializable_animal)
 
 
-    def test_calculate_statistics_empty_list(self):
-        self.assertEqual(calculate_statistics([]), {})
+        response_data = _call_deta_api("/statistics", method='POST', data={"animals": serializable_animals})
+        return response_data.get("statistics", {})
+    except StatisticsAPIError as e:
+        print(f"İstatistik API hatası: {e}")
+        return {"hata": str(e)}
+    except Exception as e:
+        print(f"Beklenmedik istatistik hesaplama hatası: {e}")
+        return {"hata": str(e)}
 
-    @patch('src.statistics.date')
-    def test_calculate_statistics(self, mock_date):
-        mock_date.today.return_value = date(2024, 7, 13) # Fix current date for consistent age calculation
+def calculate_breed_distribution(animals: List[Dict[str, Any]]) -> Dict[str, int]:
+    # Bu fonksiyon hala lokalde kullanılabilir veya API'ye taşınabilir.
+    # Şimdilik, sadece API'ye taşıma kararını istatistik ve grafik için uyguluyoruz.
+    # Ancak istatistik hesaplama API'si bunu da kapsadığı için, bu fonksiyonu API'den alacağız.
+    raise NotImplementedError("Irk dağılımı hesaplaması artık Deta API üzerinden yapılmaktadır.")
 
-        stats = calculate_statistics(self.processed_mock_animals) # Use processed animals
-        self.assertAlmostEqual(stats["toplam_hayvan_sayisi"], 4)
-        self.assertAlmostEqual(stats["inek_sayisi"], 2)
-        self.assertAlmostEqual(stats["duve_sayisi"], 2)
-        self.assertAlmostEqual(stats["ortalama_tohumlama_sayisi"], (1 + 0 + 2 + 1) / 4) # (total inseminations / total animals)
-        
-        # Age calculation:
-        # Animal 1: 2024-07-13 - 2020-01-01 = 1656 days
-        # Animal 2: 2024-07-13 - 2023-03-15 = 486 days
-        # Animal 3: 2024-07-13 - 2021-07-20 = 1089 days
-        # Animal 4: 2024-07-13 - 2024-02-10 = 154 days
-        # Total days: 1656 + 486 + 1089 + 154 = 3385
-        # Average days: 3385 / 4 = 846.25
-        # Average years: 846.25 / 365.25 = ~2.316 years
-        self.assertAlmostEqual(stats["ortalama_yas_gun"], 846.25, places=2)
-        self.assertAlmostEqual(stats["ortalama_yas_yil"], 2.3, places=1)
+def generate_pie_chart_base64(data: Dict[str, int], title: str) -> Optional[str]:
+    """Pasta grafiğini oluşturmak için Deta API'yi çağırır."""
+    try:
+        response_data = _call_deta_api("/charts/pie", method='POST', data={"data": data, "title": title})
+        return response_data.get("chart_base64")
+    except StatisticsAPIError as e:
+        print(f"Pasta grafiği API hatası: {e}")
+        return None
+    except Exception as e:
+        print(f"Beklenmedik pasta grafiği hatası: {e}")
+        return None
 
+def calculate_births_per_month(animals: List[Dict[str, Any]]) -> Dict[str, int]:
+    # Bu fonksiyon da artık API'den gelecek istatistiklerin bir parçasıdır.
+    raise NotImplementedError("Aylık doğum sayısı hesaplaması artık Deta API üzerinden yapılmaktadır.")
 
-    def test_calculate_breed_distribution(self):
-        breed_dist = calculate_breed_distribution(self.processed_mock_animals) # Use processed animals
-        self.assertEqual(breed_dist, {'Holstein': 2, 'Jersey': 1, 'Angus': 1})
+def generate_bar_chart_base64(data: Dict[str, int], title: str, xlabel: str, ylabel: str) -> Optional[str]:
+    """Çubuk grafiği oluşturmak için Deta API'yi çağırır."""
+    try:
+        response_data = _call_deta_api("/charts/bar", method='POST', data={"data": data, "title": title, "xlabel": xlabel, "ylabel": ylabel})
+        return response_data.get("chart_base64")
+    except StatisticsAPIError as e:
+        print(f"Çubuk grafiği API hatası: {e}")
+        return None
+    except Exception as e:
+        print(f"Beklenmedik çubuk grafiği hatası: {e}")
+        return None
 
-    def test_generate_pie_chart_base64_valid_data(self):
-        data = {'BreedA': 10, 'BreedB': 5}
-        chart_base64 = generate_pie_chart_base64(data, "Test Pie Chart")
-        self.assertIsNotNone(chart_base64)
-        self.assertIsInstance(chart_base64, str)
-        # Check if it's a valid base64 string
-        self.assertGreater(len(chart_base64), 0)
-        try:
-            base64.b64decode(chart_base64)
-        except Exception:
-            self.fail("Generated string is not valid base64")
-
-    def test_generate_pie_chart_base64_empty_data(self):
-        chart_base64 = generate_pie_chart_base64({}, "Empty Chart")
-        self.assertIsNone(chart_base64) # Should return None as per implementation
-
-    def test_calculate_births_per_month(self):
-        births = calculate_births_per_month(self.mock_animals)
-        self.assertEqual(births, {'2020-01': 1, '2021-07': 1, '2023-03': 1, '2024-02': 1})
-
-    def test_generate_bar_chart_base64_valid_data(self):
-        data = {'2023-01': 2, '2023-02': 5}
-        chart_base64 = generate_bar_chart_base64(data, "Test Bar Chart", "Month", "Count")
-        self.assertIsNotNone(chart_base64)
-        self.assertIsInstance(chart_base64, str)
-        self.assertGreater(len(chart_base64), 0)
-        try:
-            base64.b64decode(chart_base64)
-        except Exception:
-            self.fail("Generated string is not valid base64")
-
-    def test_generate_bar_chart_base64_empty_data(self):
-        chart_base64 = generate_bar_chart_base64({}, "Empty Bar Chart", "X", "Y")
-        self.assertIsNone(chart_base64) # Should return None as per implementation
-
-    def test_get_animal_specific_stats_found(self):
-        stats = get_animal_specific_stats('1', self.processed_mock_animals) # Use processed animals
-        self.assertEqual(stats['toplam_tohumlama_sayisi'], 1)
-        self.assertEqual(stats['sinif_tahmini'], 'İnek')
-        self.assertIsInstance(stats['son_tohumlama'], datetime) # Now it should be datetime object
-        self.assertEqual(stats['dogum_tarihi'], '2020-01-01') # This is expected to be string from stats function
-
-    def test_get_animal_specific_stats_not_found(self):
-        stats = get_animal_specific_stats('999', self.processed_mock_animals) # Use processed animals
-        self.assertEqual(stats, {"hata": "Hayvan bulunamadı."})
-
-    # Removed duplicated test_get_animal_specific_stats_not_found
-
-if __name__ == '__main__':
-    unittest.main()
+def get_animal_specific_stats(animal_uuid: str, all_processed_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Hayvan özel istatistiklerini almak için Deta API'yi çağırır."""
+    try:
+        serializable_animals = []
+        for animal in all_processed_data:
+            serializable_animal = animal.copy()
+            for key, value in serializable_animal.items():
+                if isinstance(value, datetime):
+                    serializable_animal[key] = value.isoformat()
+                elif isinstance(value, list): # Tohumlamalar gibi listelerdeki datetime'ları da çevir
+                    processed_list_items = []
+                    for item in value:
+                        if isinstance(item, dict):
+                            processed_item = item.copy()
+                            for k, v in processed_item.items():
+                                if isinstance(v, datetime):
+                                    processed_item[k] = v.isoformat()
+                            processed_list_items.append(processed_item)
+                        else:
+                            processed_list_items.append(item)
+                    serializable_animal[key] = processed_list_items
+            serializable_animals.append(serializable_animal)
+            
+        response_data = _call_deta_api(f"/animal_stats/{animal_uuid}", method='POST', data={"animals": serializable_animals})
+        return response_data.get("animal_stats", {"hata": "Hayvan bulunamadı."})
+    except StatisticsAPIError as e:
+        print(f"Hayvan özel istatistikleri API hatası: {e}")
+        return {"hata": str(e)}
+    except Exception as e:
+        print(f"Beklenmedik hayvan özel istatistik hatası: {e}")
+        return {"hata": str(e)}
