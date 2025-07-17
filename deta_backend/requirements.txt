@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+supabase-py
+numpy
+pandas
+matplotlib
+requests # Supabase'den veri çekmek için
+python-dotenv # Ortam değişkenleri için

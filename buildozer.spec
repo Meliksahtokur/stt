@@ -11,7 +11,9 @@ version = 1.0.0
 # version.filename = %(source.dir)s/main.py
 
 # (list) Application requirements
-requirements = python3,kivy,kivymd,supabase-py,pandas,numpy,matplotlib,requests,beautifulsoup4,tabulate,plyer,openpyxl,python-dotenv,android_permissions
+# Bilimsel kütüphaneler (numpy, pandas, matplotlib) artık mobil uygulamadan çıkarıldı
+# ve Deta Space backend'e taşındı.
+requirements = python3,kivy,kivymd,supabase-py,requests,beautifulsoup4,tabulate,plyer,openpyxl,python-dotenv,android_permissions,certifi
 
 # (str) Custom source folders for requirements
 # Sets custom source for any requirements with recipes
