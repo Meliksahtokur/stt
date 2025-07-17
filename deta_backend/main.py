@@ -23,6 +23,12 @@ from supabase import create_client, Client
 # Deta Micro ortamında bunlar otomatik yüklenecektir
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+# Deta API Bilgileri (Backend İstatistik Servisi İçin)
+# Bu değerler Deta Space projenizi dağıttıktan sonra elde edilecektir.
+# Güvenlik için bunları .env dosyasına eklemeyi unutmayın.
+DETA_API_BASE_URL = os.environ.get("DETA_API_BASE_URL", "YOUR_DETA_API_BASE_URL")
+DETA_API_KEY = os.environ.get("DETA_API_KEY", "YOUR_DETA_API_KEY")
 DETA_API_KEY_AUTH = os.environ.get("DETA_API_KEY_AUTH") # API anahtarı doğrulaması için
 
 # Logger ayarları
